@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Material {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String            @unique
+  createdAt       DateTime?         @default(now()) @map("created_at") @db.Timestamptz
+  partPieces      PartPiece[]
+  cuttingBatches  CuttingBatch[]
+
+  @@map("materials")
+}
+
+model Product {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String        @unique
+  name        String?
+  createdAt   DateTime?     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime?     @default(now()) @map("updated_at") @db.Timestamptz
+  parts       ProductPart[]
+  orderItems  OrderItem[]
+
+  @@map("products")
+}
+
+model ProductPart {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId   String      @map("product_id") @db.Uuid
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  partName    String      @map("part_name")
+  createdAt   DateTime?   @default(now()) @map("created_at") @db.Timestamptz
+  pieces      PartPiece[]
+
+  @@map("product_parts")
+}
+
+model PartPiece {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productPartId     String             @map("product_part_id") @db.Uuid
+  productPart       ProductPart        @relation(fields: [productPartId], references: [id], onDelete: Cascade)
+  edge1             Decimal            @db.Decimal
+  edge2             Decimal            @db.Decimal
+  edge3             Decimal            @db.Decimal
+  thickness         Decimal?           @db.Decimal // Generated column in db
+  width             Decimal            @db.Decimal
+  height            Decimal            @db.Decimal
+  materialId        String             @map("material_id") @db.Uuid
+  material          Material           @relation(fields: [materialId], references: [id])
+  quantity          Int
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamptz
+  cuttingBatchItems CuttingBatchItem[]
+
+  @@map("part_pieces")
+}
+
+model Order {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderCode  String      @unique @map("order_code")
+  status     String      @default("draft")
+  createdAt  DateTime?   @default(now()) @map("created_at") @db.Timestamptz
+  items      OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId           String             @map("order_id") @db.Uuid
+  order             Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String             @map("product_id") @db.Uuid
+  product           Product            @relation(fields: [productId], references: [id])
+  setQuantity       Int                @map("set_quantity")
+  createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamptz
+  cuttingBatchItems CuttingBatchItem[]
+
+  @@map("order_items")
+}
+
+model CuttingBatch {
+  id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  materialId    String             @map("material_id") @db.Uuid
+  material      Material           @relation(fields: [materialId], references: [id])
+  thickness     Decimal            @db.Decimal
+  status        String             @default("suggested")
+  createdAt     DateTime?          @default(now()) @map("created_at") @db.Timestamptz
+  items         CuttingBatchItem[]
+  reports       PackingReport[]
+
+  @@map("cutting_batches")
+}
+
+model CuttingBatchItem {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cuttingBatchId   String       @map("cutting_batch_id") @db.Uuid
+  cuttingBatch     CuttingBatch @relation(fields: [cuttingBatchId], references: [id], onDelete: Cascade)
+  orderItemId      String       @map("order_item_id") @db.Uuid
+  orderItem        OrderItem    @relation(fields: [orderItemId], references: [id])
+  partPieceId      String       @map("part_piece_id") @db.Uuid
+  partPiece        PartPiece    @relation(fields: [partPieceId], references: [id])
+  sheetIndex       Int          @map("sheet_index")
+  sheetSize        String       @map("sheet_size")
+  x                Decimal      @db.Decimal
+  y                Decimal      @db.Decimal
+  w                Decimal      @db.Decimal
+  h                Decimal      @db.Decimal
+  rotated          Boolean      @default(false)
+  createdAt        DateTime?    @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("cutting_batch_items")
+}
+
+model PackingReport {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cuttingBatchId   String       @map("cutting_batch_id") @db.Uuid
+  cuttingBatch     CuttingBatch @relation(fields: [cuttingBatchId], references: [id], onDelete: Cascade)
+  totalSheets      Int          @map("total_sheets")
+  totalVolumeM3    Decimal?     @map("total_volume_m3") @db.Decimal
+  utilizationPct   Decimal?     @map("utilization_pct") @db.Decimal
+  pdfUrl           String?      @map("pdf_url")
+  createdAt        DateTime?    @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("packing_reports")
+}
