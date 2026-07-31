@@ -394,8 +394,8 @@ backend/
 - [x] FE `/orders`, `/orders/[id]`
 
 ### Giai đoạn 3 — In ấn
-- [ ] 3 endpoint PDF ở mục 6 (order / 1 part / all parts)
-- [ ] FE: nút "In" tương ứng từng trang
+- [x] Xuất phiếu in trực tiếp trên FE (order / 1 part / all parts) bằng CSS @media print
+- [x] FE: nút "In" tương ứng từng trang
 
 ### Giai đoạn 4 — Thuật toán Packing cốt lõi
 - [ ] `grouping.service.ts`: gom piece theo `(material, thickness)`, nhân theo `set_quantity`
