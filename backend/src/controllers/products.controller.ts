@@ -19,7 +19,8 @@ export const importProducts = async (req: Request, res: Response) => {
 export const getProducts = async (req: Request, res: Response) => {
   try {
     const products = await prisma.product.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: { parts: true }
     });
     res.json(products);
   } catch (error) {

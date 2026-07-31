@@ -64,7 +64,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     </td>
                     <td className="px-4 py-2 text-gray-700">{piece.material?.name}</td>
                     <td className="px-4 py-2 text-blue-600 font-medium">
-                      {piece.thickness} x {piece.width} x {piece.height}
+                      {piece.thickness ?? Math.min(piece.edge1, piece.edge2, piece.edge3)} x {piece.width} x {piece.height}
                     </td>
                     <td className="px-4 py-2 font-bold">{piece.quantity}</td>
                   </tr>

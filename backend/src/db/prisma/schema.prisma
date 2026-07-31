@@ -25,7 +25,6 @@ model Product {
   createdAt   DateTime?     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime?     @default(now()) @map("updated_at") @db.Timestamptz
   parts       ProductPart[]
-  orderItems  OrderItem[]
 
   @@map("products")
 }
@@ -37,6 +36,7 @@ model ProductPart {
   partName    String      @map("part_name")
   createdAt   DateTime?   @default(now()) @map("created_at") @db.Timestamptz
   pieces      PartPiece[]
+  orderItems  OrderItem[]
 
   @@map("product_parts")
 }
@@ -74,8 +74,8 @@ model OrderItem {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   orderId           String             @map("order_id") @db.Uuid
   order             Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId         String             @map("product_id") @db.Uuid
-  product           Product            @relation(fields: [productId], references: [id])
+  productPartId     String             @map("product_part_id") @db.Uuid
+  productPart       ProductPart        @relation(fields: [productPartId], references: [id])
   setQuantity       Int                @map("set_quantity")
   createdAt         DateTime?          @default(now()) @map("created_at") @db.Timestamptz
   cuttingBatchItems CuttingBatchItem[]

@@ -12,9 +12,8 @@ Xưởng sản xuất cắt các miếng mút (foam) từ tấm phôi lớn đ�
 
 ```
 Đơn hàng sản xuất (Order)
- └─ Mã hàng (Product Code)          -- 1 đơn có nhiều mã hàng, mỗi mã hàng cần sản xuất N bộ
-     └─ Chi tiết (Part Group)        -- 1 mã hàng có nhiều chi tiết (đặt tên, VD "ST7X5")
-         └─ Piece (dòng kích thước)  -- 1 chi tiết có nhiều dòng: Cạnh 1, Cạnh 2, Cạnh 3, Loại mút, Số lượng
+ └─ Chi tiết (Product Part)          -- 1 đơn có nhiều Chi tiết thuộc các Mã hàng khác nhau, kèm Số lượng bộ.
+     └─ Piece (dòng kích thước)  -- 1 chi tiết có nhiều dòng: Cạnh 1, Cạnh 2, Cạnh 3, Loại mút, Số lượng
 ```
 
 **Ví dụ dữ liệu thực tế (từ file Excel mã hàng "Opa II SO"):**
@@ -44,7 +43,7 @@ Xưởng sản xuất cắt các miếng mút (foam) từ tấm phôi lớn đ�
 ### 1.3 Các chức năng cần có (danh sách yêu cầu gốc)
 
 1. **Thêm mới / Cập nhật Mã hàng** bằng cách upload file Excel (cấu trúc như bảng ở mục 1.1).
-2. **Tạo Đơn hàng sản xuất** gồm nhiều Mã hàng, mỗi mã hàng nhập số bộ cần sản xuất.
+2. **Tạo Đơn hàng sản xuất** bằng cách upload file Excel (Mã hàng, Chi tiết, Số lượng) hoặc chọn bằng tay.
 3. **In Đơn hàng** (toàn bộ nội dung đơn ra PDF).
 4. **In 1 Chi tiết** (1 trang PDF).
 5. **In tất cả các Chi tiết** (mỗi chi tiết 1 trang, xuất PDF nhiều trang).
@@ -390,9 +389,9 @@ backend/
 - [x] FE `/products`: danh sách, tìm kiếm, xem chi tiết
 
 ### Giai đoạn 2 — Quản lý Đơn hàng
-- [ ] `POST /orders`, `POST /orders/:id/items`
-- [ ] FE `/orders/new`: chọn nhiều mã hàng có sẵn, nhập số bộ
-- [ ] FE `/orders`, `/orders/[id]`
+- [x] `POST /orders`, `GET /orders`
+- [x] FE `/orders/new`: import bằng Excel (Mã hàng, Chi tiết, Số lượng) hoặc chọn tay
+- [x] FE `/orders`, `/orders/[id]`
 
 ### Giai đoạn 3 — In ấn
 - [ ] 3 endpoint PDF ở mục 6 (order / 1 part / all parts)

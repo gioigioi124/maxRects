@@ -83,16 +83,20 @@ export async function importExcelData(fileBuffer: Buffer) {
           }
         }
 
-        const piecesData = pieces.map(p => ({
-          productPartId: part.id,
-          edge1: p.edge1,
-          edge2: p.edge2,
-          edge3: p.edge3,
-          width: p.width,
-          height: p.height,
-          materialId: materialCache.get(p.materialName)!,
-          quantity: p.quantity,
-        }));
+        const piecesData = pieces.map(p => {
+          const sortedEdges = [p.edge1, p.edge2, p.edge3].sort((a, b) => a - b);
+          return {
+            productPartId: part.id,
+            edge1: p.edge1,
+            edge2: p.edge2,
+            edge3: p.edge3,
+            thickness: sortedEdges[0],
+            width: sortedEdges[1],
+            height: sortedEdges[2],
+            materialId: materialCache.get(p.materialName)!,
+            quantity: p.quantity,
+          };
+        });
 
         await tx.partPiece.createMany({
           data: piecesData
