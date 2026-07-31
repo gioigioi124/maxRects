@@ -378,16 +378,16 @@ backend/
 ## 7. ROADMAP TRIỂN KHAI (checklist theo giai đoạn)
 
 ### Giai đoạn 0 — Khởi tạo hạ tầng
-- [ ] Tạo Supabase project, chạy SQL ở mục 4 (hoặc `prisma migrate`)
-- [ ] Repo `frontend` (Next.js) deploy "Hello World" lên Vercel
-- [ ] Repo `backend` (Express) deploy `/health` endpoint lên Render
-- [ ] Cấu hình env vars 2 phía (Supabase URL/key, CORS backend cho domain Vercel)
+- [x] Tạo Supabase project, chạy SQL ở mục 4 (hoặc `prisma migrate`)
+- [x] Repo `frontend` (Next.js) deploy "Hello World" lên Vercel
+- [x] Repo `backend` (Express) deploy `/health` endpoint lên Render
+- [x] Cấu hình env vars 2 phía (Supabase URL/key, CORS backend cho domain Vercel)
 
 ### Giai đoạn 1 — Quản lý Mã hàng (CRUD + Import Excel)
-- [ ] `POST /products/import`: parse Excel (SheetJS) đúng cấu trúc mục 1.1, validate, upsert
-- [ ] Logic cập nhật: mã hàng đã tồn tại → xóa `product_parts` cũ + insert lại
-- [ ] FE `/products/import`: kéo thả Excel, xem trước bảng trước khi lưu
-- [ ] FE `/products`: danh sách, tìm kiếm, xem chi tiết
+- [x] `POST /products/import`: parse Excel (SheetJS) đúng cấu trúc mục 1.1, validate, upsert
+- [x] Logic cập nhật: mã hàng đã tồn tại → xóa `product_parts` cũ + insert lại
+- [x] FE `/products/import`: kéo thả Excel, xem trước bảng trước khi lưu
+- [x] FE `/products`: danh sách, tìm kiếm, xem chi tiết
 
 ### Giai đoạn 2 — Quản lý Đơn hàng
 - [ ] `POST /orders`, `POST /orders/:id/items`
