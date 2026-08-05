@@ -398,19 +398,19 @@ backend/
 - [x] FE: nút "In" tương ứng từng trang
 
 ### Giai đoạn 4 — Thuật toán Packing cốt lõi
-- [ ] `grouping.service.ts`: gom piece theo `(material, thickness)`, nhân theo `set_quantity`
-- [ ] `packer.service.ts`: implement theo khung code mục 2.4, đảm bảo ràng buộc guillotine
-- [ ] Lưu kết quả vào `cutting_batches` + `cutting_batch_items`
-- [ ] `POST /packing/run`
+- [x] `grouping.service.ts`: gom piece theo `(material, thickness)`, nhân theo `set_quantity`
+- [x] `packer.service.ts`: implement theo khung code mục 2.4, đảm bảo ràng buộc guillotine
+- [x] Lưu kết quả vào `cutting_batches` + `cutting_batch_items`
+- [x] `POST /packing/run`
 
 ### Giai đoạn 5 — Gợi ý ghép giữa các đơn hàng
-- [ ] `suggestion.service.ts` theo logic mục 2.5
-- [ ] FE `/packing/suggestions`: hiển thị gợi ý, cho chọn gộp/không gộp
+- [x] `suggestion.service.ts` theo logic mục 2.5
+- [x] FE `/packing/suggestions`: hiển thị gợi ý, cho chọn gộp/không gộp
 
 ### Giai đoạn 6 — Vẽ Layout & Báo cáo
-- [ ] FE `SheetCanvas.tsx` (react-konva): vẽ theo x,y,w,h,rotated từ `cutting_batch_items`
-- [ ] FE `LayoutViewer.tsx`: chuyển qua các tấm, tổng quan số tấm/khổ/hiệu suất
-- [ ] BE `pdf-report.service.ts`: xuất layout thành PDF (mỗi tấm 1 trang)
+- [x] FE `SheetCanvas.tsx` (react-konva): vẽ theo x,y,w,h,rotated từ `cutting_batch_items`
+- [x] FE Trang chi tiết Batch: hiện list các sheet và bản vẽ
+- [x] BE API PDF report (Puppeteer / PDFKit) xuất bản vẽ (nếu có thời gian)`pdf-report.service.ts`: xuất layout thành PDF (mỗi tấm 1 trang)
 - [ ] Lưu PDF vào Supabase Storage, ghi `pdf_url` vào `packing_reports`
 
 ### Giai đoạn 7 — Hoàn thiện

@@ -26,6 +26,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Scissors size={20} />
             Packing & Cắt
           </Link>
+          <Link href="/packing/batches" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition-colors">
+            <LayoutDashboard size={20} />
+            Mẻ cắt (Batches)
+          </Link>
         </nav>
       </aside>
 
