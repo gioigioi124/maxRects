@@ -79,9 +79,6 @@ export default function SheetCanvas({ sheetWidth, sheetHeight, items, sheetLabel
                   key={item.id}
                   x={item.x}
                   y={item.y}
-                  rotation={item.rotated ? 90 : 0}
-                  offsetX={item.rotated ? 0 : 0}
-                  offsetY={item.rotated ? 0 : 0}
                   onMouseEnter={(e) => {
                     const stage = e.target.getStage();
                     const pos = stage?.getPointerPosition();

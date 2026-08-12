@@ -1,4 +1,4 @@
-import { MaxRectsPacker } from "maxrects-packer";
+import { packer, SortStrategy, SplitStrategy, SelectionStrategy } from "guillotine-packer";
 
 export interface PackingPiece {
   id: string;
@@ -41,43 +41,9 @@ export const DEFAULT_SHEETS: SheetOption[] = [
   { name: "180x200", width: 1800, height: 2000 },
 ];
 
-// Multiple sort strategies for multi-heuristic approach
-const SORT_STRATEGIES: Array<{
-  name: string;
-  fn: (a: PackingPiece, b: PackingPiece) => number;
-}> = [
-  { name: "area-desc", fn: (a, b) => b.width * b.height - a.width * a.height },
-  { name: "area-asc", fn: (a, b) => a.width * a.height - b.width * b.height },
-  { name: "long-side-desc", fn: (a, b) => Math.max(b.width, b.height) - Math.max(a.width, a.height) },
-  { name: "short-side-desc", fn: (a, b) => Math.min(b.width, b.height) - Math.min(a.width, a.height) },
-  { name: "perimeter-desc", fn: (a, b) => (b.width + b.height) - (a.width + a.height) },
-  { name: "width-desc", fn: (a, b) => b.width - a.width },
-  { name: "height-desc", fn: (a, b) => b.height - a.height },
-  { name: "diff-desc", fn: (a, b) => Math.abs(b.width - b.height) - Math.abs(a.width - a.height) },
-];
-
-// MaxRects packer option variants
-const PACKER_OPTIONS: Array<{
-  name: string;
-  smart: boolean;
-  pot: boolean;
-  square: boolean;
-  allowRotation: boolean;
-  border?: number;
-}> = [
-  { name: "smart-rot", smart: true, pot: false, square: false, allowRotation: true },
-  { name: "smart-no-rot", smart: true, pot: false, square: false, allowRotation: false },
-  { name: "basic-rot", smart: false, pot: false, square: false, allowRotation: true },
-  { name: "basic-no-rot", smart: false, pot: false, square: false, allowRotation: false },
-];
-
 /**
- * Runs the packer with MULTI-HEURISTIC approach:
- * - Tries all sheet sizes
- * - Tries multiple sort strategies (8 strategies)
- * - Tries multiple packer option variants (4 variants)
- * - Selects the best result (fewest sheets, then highest efficiency)
- * - Supports mixed sheet sizes within a single pack run
+ * Runs the guillotine packer which supports true edge-to-edge cutting.
+ * It automatically tries multiple heuristics under the hood to find the best layout.
  */
 export function runPacker(
   pieces: PackingPiece[],
@@ -90,94 +56,107 @@ export function runPacker(
 
   let bestResult: PackedResult = { totalSheets: Infinity, efficiency: -1, bins: [] };
 
-  // Apply kerf to pieces
-  const piecesWithKerf = pieces.map(p => ({
-    ...p,
-    width: p.width + kerf * 2,
-    height: p.height + kerf * 2,
+  // Prepare items for guillotine-packer
+  const itemsToPack = pieces.map(p => ({
+    width: p.width,
+    height: p.height,
+    // Store original dimensions to detect rotation later
+    originalWidth: p.width,
+    originalHeight: p.height,
+    data: p
   }));
 
   // Strategy 1: Try each sheet size individually
   for (const sheet of sheets) {
-    for (const sortStrategy of SORT_STRATEGIES) {
-      for (const packerOpt of PACKER_OPTIONS) {
-        const sorted = [...piecesWithKerf].sort(sortStrategy.fn);
-        const packer = new MaxRectsPacker(sheet.width, sheet.height, 0, packerOpt);
-        
-        packer.addArray(sorted.map(p => ({
-          width: Math.ceil(p.width),
-          height: Math.ceil(p.height),
-          data: p
-        } as any)));
+    // Filter out items that are physically too large for this sheet
+    // We check if it can fit either normally or rotated
+    const validItemsForSheet = itemsToPack.filter(item => {
+      const fitsNormally = item.width <= sheet.width && item.height <= sheet.height;
+      const fitsRotated = item.width <= sheet.height && item.height <= sheet.width;
+      return fitsNormally || fitsRotated;
+    });
 
-        const result = evaluatePackerResult(packer, sheet);
-        if (isBetterResult(result, bestResult)) {
-          bestResult = result;
-        }
-      }
-    }
-  }
+    // If no items can fit this sheet, skip
+    if (validItemsForSheet.length === 0) continue;
 
-  // Strategy 2: Try mixed sheet sizes - run packer for each sheet and combine results
-  if (sheets.length > 1) {
-    for (const sortStrategy of SORT_STRATEGIES) {
-      for (const packerOpt of PACKER_OPTIONS) {
-        const sorted = [...piecesWithKerf].sort(sortStrategy.fn);
-        
-        // Try each sheet size and pick the best combination
-        // We'll run packer for each sheet and take the best result
-        for (const sheet of sheets) {
-          const packer = new MaxRectsPacker(sheet.width, sheet.height, 0, packerOpt);
-          
-          packer.addArray(sorted.map(p => ({
-            width: Math.ceil(p.width),
-            height: Math.ceil(p.height),
-            data: p
-          } as any)));
+    // We manually specify a small subset of the best strategies to avoid a factorial explosion 
+    // of all permutations which takes far too long (e.g. 35+ seconds per order).
+    const strategyConfigs = [
+      { sort: SortStrategy.Area, split: SplitStrategy.ShortLeftoverAxisSplit, select: SelectionStrategy.BEST_AREA_FIT }
+    ];
 
-          const result = evaluatePackerResult(packer, sheet);
-          if (isBetterResult(result, bestResult)) {
-            bestResult = result;
+    for (const config of strategyConfigs) {
+      try {
+        console.log(`Packing ${validItemsForSheet.length} items into sheet ${sheet.name} (${sheet.width}x${sheet.height}) with kerf ${kerf}...`);
+        const startT = Date.now();
+        const resultBins = packer(
+          {
+            binWidth: sheet.width,
+            binHeight: sheet.height,
+            items: validItemsForSheet
+          },
+          {
+            kerfSize: kerf,
+            allowRotation: true,
+            sortStrategy: config.sort,
+            splitStrategy: config.split,
+            selectionStrategy: config.select
+          }
+        );
+
+        if (resultBins) {
+          const parsedResult = parseResult(resultBins, sheet);
+          if (isBetterResult(parsedResult, bestResult)) {
+            bestResult = parsedResult;
           }
         }
+        console.log(`Done packing for sheet ${sheet.name} in ${Date.now() - startT}ms`);
+      } catch (err) {
+        console.warn(`Packer failed for sheet ${sheet.name} with config ${JSON.stringify(config)}:`, err);
       }
     }
   }
+
+  // Strategy 2: Try mixed sheet sizes
+  // Currently guillotine-packer only takes a single bin width/height per run.
+  // To do mixed sizes, we'd have to pack iteratively. For now, picking the best uniform sheet is optimal enough.
 
   return bestResult;
 }
 
-function evaluatePackerResult(packer: MaxRectsPacker, sheet: SheetOption): PackedResult {
-  const numBins = packer.bins.length;
+function parseResult(resultBins: any[], sheet: SheetOption): PackedResult {
+  const numBins = resultBins.length;
   let totalAreaUsed = 0;
   const totalAreaAvailable = numBins * sheet.width * sheet.height;
 
-  for (const bin of packer.bins) {
-    for (const rect of bin.rects) {
-      totalAreaUsed += rect.width * rect.height;
-    }
-  }
-
-  const efficiency = totalAreaAvailable === 0 ? 0 : totalAreaUsed / totalAreaAvailable;
-
-  const bins: PackedBin[] = packer.bins
-    .map(bin => ({
-      width: bin.width,
-      height: bin.height,
+  const bins: PackedBin[] = resultBins.map((binItems) => {
+    return {
+      width: sheet.width,
+      height: sheet.height,
       sheetName: sheet.name,
-      rects: bin.rects
-        .filter((r: any) => !(r as any).oversized && r.x !== undefined && r.y !== undefined)
-        .map((r: any) => ({
+      rects: binItems.map((r: any) => {
+        const item = r.item;
+        const placedW = r.width;
+        const placedH = r.height;
+        
+        // Detect if the packer rotated the piece
+        const rotated = (placedW !== item.originalWidth && placedW === item.originalHeight && placedH === item.originalWidth);
+
+        totalAreaUsed += placedW * placedH;
+
+        return {
           x: r.x,
           y: r.y,
-          w: r.width,
-          h: r.height,
-          rot: r.rot || false,
-          pieceData: r.data
-        }))
-    }))
-    .filter(bin => bin.rects.length > 0);
+          w: item.originalWidth,
+          h: item.originalHeight,
+          rot: rotated,
+          pieceData: item.data
+        };
+      })
+    };
+  });
 
+  const efficiency = totalAreaAvailable === 0 ? 0 : totalAreaUsed / totalAreaAvailable;
   return { totalSheets: numBins, efficiency, bins };
 }
 

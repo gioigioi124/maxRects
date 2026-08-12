@@ -4,9 +4,9 @@ import { PackageSearch, ShoppingCart, Scissors, LayoutDashboard } from 'lucide-r
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 print:bg-white">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col">
+      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col print:hidden">
         <div className="h-16 flex items-center px-6 border-b border-slate-800">
           <Link href="/" className="text-xl font-bold text-white flex items-center gap-2">
             <LayoutDashboard className="text-blue-500" />
@@ -34,11 +34,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 shadow-sm">
+      <main className="flex-1 flex flex-col print:block">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 shadow-sm print:hidden">
           <h2 className="font-semibold text-slate-800">Dashboard Quản lý</h2>
         </header>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto print:overflow-visible">
           {children}
         </div>
       </main>

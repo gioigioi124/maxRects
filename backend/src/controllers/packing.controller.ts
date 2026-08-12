@@ -10,6 +10,9 @@ export const runPacking = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ error: 'orderIds array is required' });
     }
 
+    // Tạm thời xóa hết mẻ cắt cũ trước khi chạy packing mới để dễ test
+    await prisma.cuttingBatch.deleteMany({});
+
     const batches = await processPackingForOrders(orderIds);
     
     // Update order status to 'processing' or 'packed'
@@ -58,7 +61,15 @@ export const getBatchById = async (req: Request, res: Response): Promise<any> =>
                 order: true
               }
             },
-            partPiece: true
+            partPiece: {
+              include: {
+                productPart: {
+                  include: {
+                    product: true
+                  }
+                }
+              }
+            }
           }
         }
       }
