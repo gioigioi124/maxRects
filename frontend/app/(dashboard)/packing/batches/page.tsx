@@ -68,7 +68,7 @@ export default function BatchesPage() {
             Danh sách Mẻ Cắt (Packing Runs)
           </h1>
           <p className="text-gray-500 text-sm">
-            Các mẻ cắt tổng hợp được tạo ra từ thuật toán Xếp Hình
+            Các mẻ cắt tổng hợp được tạo ra từ hệ thống Xếp Hình
           </p>
         </div>
       </div>

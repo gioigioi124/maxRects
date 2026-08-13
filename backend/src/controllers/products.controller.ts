@@ -54,3 +54,35 @@ export const getProductById = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch product details' });
   }
 };
+
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { code, name } = req.body;
+    const product = await prisma.product.update({
+      where: { id },
+      data: { code, name }
+    });
+    res.json(product);
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Mã hàng đã tồn tại' });
+    }
+    res.status(500).json({ error: 'Lỗi khi cập nhật mã hàng', details: error.message });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.product.delete({
+      where: { id }
+    });
+    res.json({ message: 'Deleted successfully' });
+  } catch (error: any) {
+    if (error.code === 'P2003') {
+      return res.status(400).json({ error: 'Không thể xóa mã hàng vì đã có đơn hàng sử dụng mã này.' });
+    }
+    res.status(500).json({ error: 'Lỗi khi xóa mã hàng', details: error.message });
+  }
+};

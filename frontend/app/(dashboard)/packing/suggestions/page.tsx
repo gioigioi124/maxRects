@@ -55,7 +55,7 @@ export default function SuggestionsPage() {
 
   const handleRunPacking = async () => {
     if (selectedOrderIds.length === 0) {
-      alert("Vui lòng chọn ít nhất 1 đơn hàng để chạy thuật toán.");
+      alert("Vui lòng chọn ít nhất 1 đơn hàng để tiến hành xếp mút.");
       return;
     }
 
@@ -86,7 +86,7 @@ export default function SuggestionsPage() {
       }
     } catch (e) {
       console.error(e);
-      alert("Có lỗi xảy ra khi chạy thuật toán.");
+      alert("Có lỗi xảy ra trong quá trình xếp mút.");
     } finally {
       setPacking(false);
     }
@@ -117,7 +117,7 @@ export default function SuggestionsPage() {
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8 shadow-sm">
         <h2 className="text-lg font-semibold text-amber-800 flex items-center gap-2 mb-4">
           <Lightbulb className="text-amber-500" />
-          Gợi ý gộp đơn thông minh
+          Gợi ý gộp đơn tiện lợi
         </h2>
 
         {loadingSuggestions ? (
@@ -151,7 +151,7 @@ export default function SuggestionsPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Cài đặt Thuật toán Xếp hình</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Cài đặt thông số Xếp hình</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -221,7 +221,7 @@ export default function SuggestionsPage() {
                 />
                 <div>
                   <span className="text-sm font-semibold text-gray-800 block">Tối ưu khít diện tích tuyệt đối</span>
-                  <span className="text-xs text-gray-500">Máy tính tự xoay lộn xộn để nhét được nhiều chi tiết nhất, tiết kiệm mút tối đa.</span>
+                  <span className="text-xs text-gray-500">Tự động xoay lộn xộn để nhét được nhiều chi tiết nhất, tiết kiệm mút tối đa.</span>
                 </div>
               </label>
             </div>
@@ -308,7 +308,7 @@ export default function SuggestionsPage() {
           disabled={packing || selectedOrderIds.length === 0}
         >
           <Scissors size={20} />
-          {packing ? "Đang chạy thuật toán..." : "Chạy Xếp Hình (Run Packing)"}
+          {packing ? "Đang xếp hình..." : "Tiến hành Xếp Hình (Run Packing)"}
         </Button>
       </div>
     </div>

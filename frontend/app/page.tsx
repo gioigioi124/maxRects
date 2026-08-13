@@ -14,7 +14,7 @@ export default function Home() {
           Hệ thống Tối ưu <span className="text-blue-600">MaxRects</span>
         </h1>
         <p className="text-lg text-slate-600 mb-10">
-          Giải pháp toàn diện quản lý mã hàng, lên đơn và tự động hóa thuật toán
+          Giải pháp toàn diện quản lý mã hàng, lên đơn và tự động hóa quá trình
           xếp hình (packing) cho xưởng cắt mút. Giảm thiểu hao hụt, tăng cường
           hiệu suất.
         </p>
@@ -63,7 +63,7 @@ export default function Home() {
               3. Packing & Cắt
             </h3>
             <p className="text-sm text-slate-500">
-              Gộp đơn hàng, chạy thuật toán MaxRects tối ưu diện tích mút cắt.
+              Gộp đơn hàng, sử dụng hệ thống tự động tối ưu diện tích mút cắt.
             </p>
           </Link>
         </div>

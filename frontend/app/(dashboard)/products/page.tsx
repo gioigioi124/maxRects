@@ -7,6 +7,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch('http://localhost:3001/products')
@@ -22,6 +23,26 @@ export default function ProductsPage() {
   }, []);
 
   const filtered = products.filter(p => p.code.toLowerCase().includes(search.toLowerCase()));
+
+  const handleDelete = async (id: string, code: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn xóa mã hàng ${code} không?`)) return;
+    
+    setDeleting(prev => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(`http://localhost:3001/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setProducts(products.filter(p => p.id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Lỗi khi xóa mã hàng.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra.');
+    } finally {
+      setDeleting(prev => ({ ...prev, [id]: false }));
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -65,8 +86,19 @@ export default function ProductsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                     {new Date(product.createdAt).toLocaleDateString('vi-VN')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-blue-600 hover:text-blue-800">
-                    <Link href={`/products/${product.id}`}>Xem chi tiết</Link>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-4">
+                      <Link href={`/products/${product.id}`} className="text-blue-600 hover:text-blue-800">
+                        Xem chi tiết
+                      </Link>
+                      <button 
+                        onClick={() => handleDelete(product.id, product.code)}
+                        disabled={deleting[product.id]}
+                        className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                      >
+                        {deleting[product.id] ? 'Đang xóa...' : 'Xóa'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
