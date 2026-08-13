@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState, use, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,58 @@ export default function BatchDetailPage({
       setTimeout(() => window.print(), 500);
     }
   }, [viewMode]);
+
+  const sortedBatches = run?.batches ? [...run.batches].sort((a: any, b: any) => {
+    const matA = a.material?.name || '';
+    const matB = b.material?.name || '';
+    if (matA < matB) return -1;
+    if (matA > matB) return 1;
+    return (a.thickness || 0) - (b.thickness || 0);
+  }) : [];
+
+  const summaryByMaterial = useMemo(() => {
+    if (!run?.batches) return [];
+
+    const map = new Map<string, {
+      materialName: string;
+      totalSheets: number;
+      totalVolumeOriginal: number; // m3
+      totalVolumeParts: number; // m3
+    }>();
+
+    for (const batch of run.batches) {
+      const matName = batch.material?.name || 'Unknown';
+      if (!map.has(matName)) {
+        map.set(matName, { materialName: matName, totalSheets: 0, totalVolumeOriginal: 0, totalVolumeParts: 0 });
+      }
+      const stat = map.get(matName)!;
+
+      const thickness = batch.thickness || 0; // in mm
+
+      // Items array contains rects. We need to group by sheetIndex to count sheets and original sheet sizes.
+      const sheetsMap = new Map<number, string>();
+      let partsArea = 0; // mm2
+
+      for (const item of batch.items || []) {
+        sheetsMap.set(item.sheetIndex, item.sheetSize);
+        partsArea += (item.w * item.h);
+      }
+
+      stat.totalSheets += sheetsMap.size;
+      stat.totalVolumeParts += (partsArea * thickness) / 1000000000;
+
+      let originalArea = 0; // mm2
+      for (const sheetSizeStr of sheetsMap.values()) {
+        const parts = (sheetSizeStr || "160x200").split("x");
+        const w = Number(parts[0]) * 10;
+        const h = Number(parts[1]) * 10;
+        originalArea += (w * h);
+      }
+      stat.totalVolumeOriginal += (originalArea * thickness) / 1000000000;
+    }
+
+    return Array.from(map.values()).sort((a, b) => a.materialName.localeCompare(b.materialName));
+  }, [run]);
 
   if (!run) return <div className="p-6">Đang tải...</div>;
 
@@ -79,8 +131,41 @@ export default function BatchDetailPage({
       </div>
 
       {viewMode === "TABLE" && (
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <Table>
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="bg-blue-50 border-b px-4 py-3 font-semibold text-blue-900 border-blue-100 flex items-center justify-between">
+              <span>Tổng hợp vật tư (Theo chất liệu)</span>
+            </div>
+            <Table>
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead>Chất liệu</TableHead>
+                  <TableHead className="text-right">Tổng số phôi (Tấm)</TableHead>
+                  <TableHead className="text-right">Khối lượng phôi (m³)</TableHead>
+                  <TableHead className="text-right">Khối lượng chi tiết (m³)</TableHead>
+                  <TableHead className="text-right">Hao hụt (m³)</TableHead>
+                  <TableHead className="text-right">Tỉ lệ SD</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {summaryByMaterial.map(s => (
+                  <TableRow key={s.materialName}>
+                    <TableCell className="font-bold text-blue-800">{s.materialName}</TableCell>
+                    <TableCell className="text-right font-bold text-gray-800">{s.totalSheets}</TableCell>
+                    <TableCell className="text-right font-bold text-amber-600">{s.totalVolumeOriginal.toFixed(3)}</TableCell>
+                    <TableCell className="text-right font-bold text-green-600">{s.totalVolumeParts.toFixed(3)}</TableCell>
+                    <TableCell className="text-right font-bold text-red-600">{ (s.totalVolumeOriginal - s.totalVolumeParts).toFixed(3) }</TableCell>
+                    <TableCell className="text-right font-bold">{ s.totalVolumeOriginal > 0 ? ((s.totalVolumeParts / s.totalVolumeOriginal) * 100).toFixed(1) : 0 }%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="bg-gray-50 border-b px-4 py-3 font-semibold text-gray-800">Chi tiết các mẻ cắt</div>
+            <Table>
+
             <TableHeader>
               <TableRow>
                 <TableHead>Chất liệu</TableHead>
@@ -91,7 +176,7 @@ export default function BatchDetailPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {run.batches?.map((batch: any) => (
+              {sortedBatches.map((batch: any) => (
                 <TableRow key={batch.id}>
                   <TableCell className="font-semibold text-blue-800">
                     {batch.material?.name}
@@ -122,12 +207,13 @@ export default function BatchDetailPage({
             </TableBody>
           </Table>
         </div>
+      </div>
       )}
 
       {viewMode !== "TABLE" && (
         <div className="space-y-12">
-          {run.batches
-            ?.filter((b: any) => viewMode === "ALL" || b.id === viewMode)
+          {sortedBatches
+            .filter((b: any) => viewMode === "ALL" || b.id === viewMode)
             .map((batch: any, batchIndex: number) => {
               // Group items by sheetIndex for this specific batch
               const sheets: Record<number, any[]> = {};
