@@ -10,6 +10,8 @@ export default function SuggestionsPage() {
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [packing, setPacking] = useState(false);
+  const [kerf, setKerf] = useState<number>(3);
+  const [sheetNames, setSheetNames] = useState<string[]>(['160x200', '180x200']);
 
   useEffect(() => {
     // Lấy gợi ý
@@ -52,7 +54,7 @@ export default function SuggestionsPage() {
       const res = await fetch('http://localhost:3001/packing/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderIds: selectedOrderIds })
+        body: JSON.stringify({ orderIds: selectedOrderIds, kerf, sheetNames })
       });
       const data = await res.json();
       
@@ -118,6 +120,52 @@ export default function SuggestionsPage() {
         ) : (
           <p className="text-amber-700">Không có gợi ý gộp đơn nào tối ưu tại thời điểm này.</p>
         )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Cài đặt Thuật toán Xếp hình</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Khoảng cách giữa các nhát cắt (Kerf / mm)
+            </label>
+            <input 
+              type="number" 
+              className="w-full border rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500" 
+              value={kerf} 
+              onChange={e => setKerf(Number(e.target.value))} 
+              min={0}
+            />
+            <p className="text-xs text-gray-500 mt-1">Độ dày lưỡi cưa hoặc khoảng cách tối thiểu giữa các chi tiết.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Kích thước tấm phôi ưu tiên
+            </label>
+            <div className="space-y-2">
+              {['160x200', '180x200', '160x215'].map(size => (
+                <label key={size} className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    checked={sheetNames.includes(size)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSheetNames(prev => [...prev, size]);
+                      } else {
+                        setSheetNames(prev => prev.filter(s => s !== size));
+                      }
+                    }}
+                  />
+                  <span className="text-sm text-gray-800">
+                    {size === '160x215' ? '1600x2150 (Ngoại cỡ)' : `${size.split('x')[0]}0x${size.split('x')[1]}0`}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2 italic">Lưu ý: Mút EP hệ thống sẽ tự động ép dùng khổ 1600x2000.</p>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-6">

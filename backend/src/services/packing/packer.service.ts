@@ -33,6 +33,7 @@ export interface PackedResult {
   totalSheets: number;
   efficiency: number;
   bins: PackedBin[];
+  packedCount: number;
 }
 
 // Default sheet options
@@ -51,10 +52,10 @@ export function runPacker(
   kerf: number = 0
 ): PackedResult {
   if (pieces.length === 0) {
-    return { totalSheets: 0, efficiency: 0, bins: [] };
+    return { totalSheets: 0, efficiency: 0, bins: [], packedCount: 0 };
   }
 
-  let bestResult: PackedResult = { totalSheets: Infinity, efficiency: -1, bins: [] };
+  let bestResult: PackedResult = { totalSheets: Infinity, efficiency: -1, bins: [], packedCount: -1 };
 
   // Prepare items for guillotine-packer
   const itemsToPack = pieces.map(p => ({
@@ -127,6 +128,7 @@ export function runPacker(
 function parseResult(resultBins: any[], sheet: SheetOption): PackedResult {
   const numBins = resultBins.length;
   let totalAreaUsed = 0;
+  let packedCount = 0;
   const totalAreaAvailable = numBins * sheet.width * sheet.height;
 
   const bins: PackedBin[] = resultBins.map((binItems) => {
@@ -143,6 +145,7 @@ function parseResult(resultBins: any[], sheet: SheetOption): PackedResult {
         const rotated = (placedW !== item.originalWidth && placedW === item.originalHeight && placedH === item.originalWidth);
 
         totalAreaUsed += placedW * placedH;
+        packedCount++;
 
         return {
           x: r.x,
@@ -157,13 +160,22 @@ function parseResult(resultBins: any[], sheet: SheetOption): PackedResult {
   });
 
   const efficiency = totalAreaAvailable === 0 ? 0 : totalAreaUsed / totalAreaAvailable;
-  return { totalSheets: numBins, efficiency, bins };
+  return { totalSheets: numBins, efficiency, bins, packedCount };
 }
 
 function isBetterResult(candidate: PackedResult, current: PackedResult): boolean {
-  if (candidate.totalSheets === 0) return false;
-  if (current.totalSheets === Infinity) return true;
+  if (candidate.totalSheets === 0 && candidate.packedCount === 0) return false;
+  
+  // Rule 1: Always prefer the solution that packs MORE items
+  if (candidate.packedCount > current.packedCount) return true;
+  if (candidate.packedCount < current.packedCount) return false;
+
+  // Rule 2: If packed count is same, prefer FEWER sheets
   if (candidate.totalSheets < current.totalSheets) return true;
-  if (candidate.totalSheets === current.totalSheets && candidate.efficiency > current.efficiency) return true;
+  if (candidate.totalSheets > current.totalSheets) return false;
+  
+  // Rule 3: If sheets are same, prefer HIGHER efficiency
+  if (candidate.efficiency > current.efficiency) return true;
+  
   return false;
 }

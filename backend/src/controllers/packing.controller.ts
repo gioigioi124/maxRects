@@ -1,10 +1,17 @@
 import { Request, Response } from 'express';
 import { processPackingForOrders } from '../services/packing/grouping.service';
+import { DEFAULT_SHEETS, SheetOption } from '../services/packing/packer.service';
 import prisma from '../db/prisma';
+
+const ALL_POSSIBLE_SHEETS: SheetOption[] = [
+  { name: '160x200', width: 1600, height: 2000 },
+  { name: '180x200', width: 1800, height: 2000 },
+  { name: '160x215', width: 1600, height: 2150 },
+];
 
 export const runPacking = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { orderIds } = req.body;
+    const { orderIds, kerf, sheetNames } = req.body;
     
     if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
       return res.status(400).json({ error: 'orderIds array is required' });
@@ -13,7 +20,17 @@ export const runPacking = async (req: Request, res: Response): Promise<any> => {
     // Tạm thời xóa hết mẻ cắt cũ trước khi chạy packing mới để dễ test
     await prisma.cuttingBatch.deleteMany({});
 
-    const batches = await processPackingForOrders(orderIds);
+    let selectedSheets = DEFAULT_SHEETS;
+    if (sheetNames && Array.isArray(sheetNames)) {
+      selectedSheets = ALL_POSSIBLE_SHEETS.filter(s => sheetNames.includes(s.name));
+    }
+    if (selectedSheets.length === 0) {
+      selectedSheets = DEFAULT_SHEETS;
+    }
+
+    const kerfValue = kerf !== undefined ? Number(kerf) : undefined;
+
+    const batches = await processPackingForOrders(orderIds, selectedSheets, kerfValue);
     
     // Update order status to 'processing' or 'packed'
     await prisma.order.updateMany({

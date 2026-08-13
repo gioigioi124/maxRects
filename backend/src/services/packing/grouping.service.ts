@@ -17,7 +17,11 @@ export async function processPackingForOrders(
         include: {
           productPart: {
             include: {
-              pieces: true
+              pieces: {
+                include: {
+                  material: true
+                }
+              }
             }
           }
         }
@@ -30,7 +34,7 @@ export async function processPackingForOrders(
   }
 
   // 2. Group pieces by material and thickness
-  const groups = new Map<string, PackingPiece[]>();
+  const groups = new Map<string, { materialName: string, pieces: PackingPiece[] }>();
 
   for (const order of orders) {
     for (const item of order.items) {
@@ -46,7 +50,7 @@ export async function processPackingForOrders(
         const groupKey = `${piece.materialId}_${thickness}`;
 
         if (!groups.has(groupKey)) {
-          groups.set(groupKey, []);
+          groups.set(groupKey, { materialName: (piece as any).material.name, pieces: [] });
         }
 
         const group = groups.get(groupKey)!;
@@ -55,7 +59,7 @@ export async function processPackingForOrders(
         const totalQuantity = piece.quantity * item.setQuantity;
 
         for (let i = 0; i < totalQuantity; i++) {
-          group.push({
+          group.pieces.push({
             id: `${piece.id}_${item.id}_${i}`,
             width: width,
             height: height,
@@ -70,11 +74,22 @@ export async function processPackingForOrders(
   // 3. Run packer for each group and save results
   const createdBatches = [];
 
-  for (const [key, pieces] of groups.entries()) {
+  for (const [key, group] of groups.entries()) {
     const [materialId, thickness] = key.split('_');
 
+    // For EP foam, it's only 1600x2000
+    const isEP = group.materialName.toLowerCase().includes('ep');
+    let groupSheets = sheets;
+    if (isEP) {
+      groupSheets = sheets.filter(s => s.name === "160x200" || (s.width === 1600 && s.height === 2000));
+      if (groupSheets.length === 0) {
+        // Fallback if user didn't select 160x200
+        groupSheets = [{ name: "160x200", width: 1600, height: 2000 }];
+      }
+    }
+
     // Run packer with multi-heuristic approach and kerf
-    const result = runPacker(pieces, sheets, kerf);
+    const result = runPacker(group.pieces, groupSheets, kerf);
 
     if (result.bins.length > 0) {
       // Save to database
