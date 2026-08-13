@@ -55,11 +55,13 @@ function PrintContent({ id }: { id: string }) {
     </div>
   );
 
-  const renderPartDetails = (item: any) => {
+  const renderPartDetails = (item: any, index?: number, total?: number) => {
     const part = item.productPart;
     if (!part) return null;
+    const isLast = index !== undefined && total !== undefined ? index === total - 1 : true;
+    
     return (
-      <div className="p-8 bg-white print:p-0 print:break-after-page" key={item.id}>
+      <div className={`p-8 bg-white print:p-0 ${!isLast ? 'print:break-after-page' : ''}`} key={item.id}>
         <div className="mb-6 border-b-2 border-black pb-4">
           <h2 className="text-2xl font-bold uppercase">Chi Tiết Sản Xuất: {part.partName}</h2>
           <div className="flex justify-between mt-2 text-lg">
@@ -107,6 +109,7 @@ function PrintContent({ id }: { id: string }) {
         @media print {
           @page { size: A4 portrait; margin: 15mm; }
           body { background: white; margin: 0; padding: 0; }
+          td, th { padding: 4px 8px !important; height: auto !important; }
         }
       `}} />
       
@@ -114,7 +117,7 @@ function PrintContent({ id }: { id: string }) {
       {type === 'part' && partId && renderPartDetails(order.items.find((i: any) => i.productPart?.id === partId))}
       {type === 'all' && (
         <div className="flex flex-col">
-          {order.items.map((item: any) => renderPartDetails(item))}
+          {order.items.map((item: any, index: number) => renderPartDetails(item, index, order.items.length))}
         </div>
       )}
     </div>
