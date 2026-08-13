@@ -4,29 +4,32 @@ import Link from "next/link";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 export default function BatchDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
-  const [batch, setBatch] = useState<any>(null);
+  const [run, setRun] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<"TABLE" | "ALL" | string>("TABLE");
 
   useEffect(() => {
     fetch(`http://localhost:3001/packing/batches/${resolvedParams.id}`)
       .then((res) => res.json())
-      .then((data) => setBatch(data))
+      .then((data) => setRun(data))
       .catch(console.error);
   }, [resolvedParams.id]);
 
-  if (!batch) return <div className="p-6">Đang tải...</div>;
+  useEffect(() => {
+    if (viewMode === "ALL") {
+      // Delay printing slightly to allow render to finish
+      setTimeout(() => window.print(), 500);
+    }
+  }, [viewMode]);
 
-  // Group items by sheetIndex
-  const sheets: Record<number, any[]> = {};
-  batch.items.forEach((item: any) => {
-    if (!sheets[item.sheetIndex]) sheets[item.sheetIndex] = [];
-    sheets[item.sheetIndex].push(item);
-  });
+  if (!run) return <div className="p-6">Đang tải...</div>;
 
   return (
     <div className="max-w-7xl mx-auto p-6 print:p-0">
@@ -39,34 +42,118 @@ export default function BatchDetailPage({
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
-              Sơ Đồ Cắt (Layout)
+              Sơ Đồ Cắt (Layout) - {run.name}
             </h1>
             <p className="text-gray-500">
-              Mẻ cắt ID: {batch.id.substring(0, 8)}... | {batch.material?.name}{" "}
-              {batch.thickness}mm
+              Mã Lượt: {run.id.substring(0, 8)}... | Bao gồm {run.batches?.length || 0} loại phôi
             </p>
           </div>
         </div>
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 print:hidden"
-          onClick={() => window.print()}
-        >
-          <Printer className="mr-2" size={18} /> In Phiếu Cắt
-        </Button>
+        <div className="flex gap-2">
+          {viewMode === "TABLE" ? (
+            <Button
+              className="bg-green-600 hover:bg-green-700 print:hidden"
+              onClick={() => setViewMode("ALL")}
+            >
+              <Printer className="mr-2" size={18} /> In phiếu cắt tổng hợp
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                className="print:hidden"
+                onClick={() => setViewMode("TABLE")}
+              >
+                <ArrowLeft className="mr-2" size={18} /> Quay lại bảng
+              </Button>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 print:hidden"
+                onClick={() => window.print()}
+              >
+                <Printer className="mr-2" size={18} /> 
+                {viewMode === "ALL" ? "In Tất Cả" : "In Phiếu Cắt"}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-12">
-        {Object.entries(sheets).map(([sheetIndex, items], arrIndex, arr) => {
-          // Parse sheetSize e.g. "160x200" -> 1600x2000
-          const sheetSizeStr = items[0]?.sheetSize || "160x200";
-          const parts = sheetSizeStr.split("x");
-          const sheetWidth = Number(parts[0]) * 10;
-          const sheetHeight = Number(parts[1]) * 10;
+      {viewMode === "TABLE" && (
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Chất liệu</TableHead>
+                <TableHead>Độ dày (mm)</TableHead>
+                <TableHead>Số lượng tấm phôi</TableHead>
+                <TableHead>Hiệu suất SD</TableHead>
+                <TableHead>Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {run.batches?.map((batch: any) => (
+                <TableRow key={batch.id}>
+                  <TableCell className="font-semibold text-blue-800">
+                    {batch.material?.name}
+                  </TableCell>
+                  <TableCell className="font-bold">{batch.thickness}</TableCell>
+                  <TableCell>
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold">
+                      {batch.reports?.[0]?.totalSheets || 0} Tấm
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {batch.reports?.[0]?.utilizationPct
+                      ? Number(batch.reports[0].utilizationPct).toFixed(1)
+                      : 0}
+                    %
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setViewMode(batch.id)}
+                    >
+                      Xem & In lẻ
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {viewMode !== "TABLE" && (
+        <div className="space-y-12">
+          {run.batches
+            ?.filter((b: any) => viewMode === "ALL" || b.id === viewMode)
+            .map((batch: any, batchIndex: number) => {
+              // Group items by sheetIndex for this specific batch
+              const sheets: Record<number, any[]> = {};
+              batch.items?.forEach((item: any) => {
+                if (!sheets[item.sheetIndex]) sheets[item.sheetIndex] = [];
+                sheets[item.sheetIndex].push(item);
+              });
+
+              return (
+                <div key={batch.id} className={`batch-section ${batchIndex > 0 && viewMode === "ALL" ? 'print:break-before-page' : ''}`}>
+                  {viewMode === "ALL" && (
+                    <div className="bg-gray-800 text-white p-3 font-bold rounded-t-lg print:text-black print:bg-gray-200">
+                      Phần {batchIndex + 1}: {batch.material?.name} - {batch.thickness}mm
+                    </div>
+                  )}
+                  <div className={`space-y-8 ${viewMode === "ALL" ? 'p-4 border border-t-0 rounded-b-lg' : ''}`}>
+                    {Object.entries(sheets).map(([sheetIndex, items], arrIndex, arr) => {
+                      const sheetSizeStr = items[0]?.sheetSize || "160x200";
+                      const parts = sheetSizeStr.split("x");
+                      const sheetWidth = Number(parts[0]) * 10;
+                      const sheetHeight = Number(parts[1]) * 10;
 
           return (
             <div
               key={sheetIndex}
-              className={`bg-white p-6 rounded-lg shadow-sm border print:shadow-none print:border-none print:p-0 ${
+              className={`bg-white p-6 rounded-lg shadow-sm border print:shadow-none print:border-none print:p-0 print:break-inside-avoid ${
                 arrIndex < arr.length - 1 ? "print:break-after-page" : ""
               }`}
             >
@@ -222,7 +309,12 @@ export default function BatchDetailPage({
             </div>
           );
         })}
-      </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      )}
     </div>
   );
 }

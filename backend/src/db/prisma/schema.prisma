@@ -85,6 +85,8 @@ model OrderItem {
 
 model CuttingBatch {
   id            String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  packingRunId  String?            @map("packing_run_id") @db.Uuid
+  packingRun    PackingRun?        @relation(fields: [packingRunId], references: [id], onDelete: Cascade)
   materialId    String             @map("material_id") @db.Uuid
   material      Material           @relation(fields: [materialId], references: [id])
   thickness     Decimal            @db.Decimal
@@ -127,4 +129,14 @@ model PackingReport {
   createdAt        DateTime?    @default(now()) @map("created_at") @db.Timestamptz
 
   @@map("packing_reports")
+}
+
+model PackingRun {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  status      String         @default("suggested")
+  createdAt   DateTime?      @default(now()) @map("created_at") @db.Timestamptz
+  batches     CuttingBatch[]
+
+  @@map("packing_runs")
 }

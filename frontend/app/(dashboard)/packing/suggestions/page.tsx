@@ -1,8 +1,15 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { Lightbulb, Scissors, CheckSquare, Square } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+"use client";
+import React, { useEffect, useState } from "react";
+import { Lightbulb, Scissors, CheckSquare, Square } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function SuggestionsPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -15,70 +22,80 @@ export default function SuggestionsPage() {
 
   useEffect(() => {
     // Lấy gợi ý
-    fetch('http://localhost:3001/packing/suggestions')
-      .then(res => res.json())
-      .then(data => {
+    fetch("http://localhost:3001/packing/suggestions")
+      .then((res) => res.json())
+      .then((data) => {
         setSuggestions(data);
         setLoadingSuggestions(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setLoadingSuggestions(false);
       });
 
     // Lấy danh sách đơn hàng chưa cắt
-    fetch('http://localhost:3001/orders')
-      .then(res => res.json())
-      .then(data => {
+    fetch("http://localhost:3001/orders")
+      .then((res) => res.json())
+      .then((data) => {
         // Lọc các đơn hàng chưa bị cắt hết
-        const pendingOrders = data.filter((o: any) => o.status === 'draft' || o.status === 'processing');
+        const pendingOrders = data.filter(
+          (o: any) => o.status === "draft" || o.status === "processing",
+        );
         setOrders(pendingOrders);
       })
       .catch(console.error);
   }, []);
 
   const toggleOrder = (id: string) => {
-    setSelectedOrderIds(prev => 
-      prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
+    setSelectedOrderIds((prev) =>
+      prev.includes(id) ? prev.filter((oid) => oid !== id) : [...prev, id],
     );
   };
 
   const handleRunPacking = async () => {
     if (selectedOrderIds.length === 0) {
-      alert('Vui lòng chọn ít nhất 1 đơn hàng để chạy thuật toán.');
+      alert("Vui lòng chọn ít nhất 1 đơn hàng để chạy thuật toán.");
       return;
     }
 
     setPacking(true);
     try {
-      const res = await fetch('http://localhost:3001/packing/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderIds: selectedOrderIds, kerf, sheetNames })
+      const res = await fetch("http://localhost:3001/packing/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderIds: selectedOrderIds, kerf, sheetNames }),
       });
       const data = await res.json();
-      
+
       if (res.ok) {
-        alert('Chạy thành công! Đã tạo ra ' + data.batches?.length + ' mẻ cắt.');
+        alert(
+          "Chạy thành công! Đã tạo ra " + data.batches?.length + " mẻ cắt.",
+        );
         // Refresh orders and selected
         setSelectedOrderIds([]);
-        const ordersRes = await fetch('http://localhost:3001/orders');
+        const ordersRes = await fetch("http://localhost:3001/orders");
         const ordersData = await ordersRes.json();
-        setOrders(ordersData.filter((o: any) => o.status === 'draft' || o.status === 'processing'));
+        setOrders(
+          ordersData.filter(
+            (o: any) => o.status === "draft" || o.status === "processing",
+          ),
+        );
       } else {
-        alert('Lỗi: ' + data.error);
+        alert("Lỗi: " + data.error);
       }
     } catch (e) {
       console.error(e);
-      alert('Có lỗi xảy ra khi chạy thuật toán.');
+      alert("Có lỗi xảy ra khi chạy thuật toán.");
     } finally {
       setPacking(false);
     }
   };
 
   const handleApplySuggestion = (orderCodes: string[]) => {
-    const idsToSelect = orders.filter(o => orderCodes.includes(o.orderCode)).map(o => o.id);
-    setSelectedOrderIds(prev => {
+    const idsToSelect = orders
+      .filter((o) => orderCodes.includes(o.orderCode))
+      .map((o) => o.id);
+    setSelectedOrderIds((prev) => {
       const newSet = new Set([...prev, ...idsToSelect]);
       return Array.from(newSet);
     });
@@ -87,8 +104,13 @@ export default function SuggestionsPage() {
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Gợi Ý & Xếp Hình (Packing)</h1>
-        <p className="text-gray-500 text-sm">Hệ thống sẽ tự động ghép các chi tiết cùng loại mút và độ dày để tối ưu hoá việc sử dụng phôi.</p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Gợi Ý & Xếp Hình (Packing)
+        </h1>
+        <p className="text-gray-500 text-sm">
+          Hệ thống sẽ tự động ghép các chi tiết cùng loại mút và độ dày để tối
+          ưu hoá việc sử dụng phôi.
+        </p>
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8 shadow-sm">
@@ -96,19 +118,22 @@ export default function SuggestionsPage() {
           <Lightbulb className="text-amber-500" />
           Gợi ý gộp đơn thông minh
         </h2>
-        
+
         {loadingSuggestions ? (
           <p className="text-amber-700">Đang phân tích dữ liệu...</p>
         ) : suggestions.length > 0 ? (
           <div className="space-y-4">
             {suggestions.map((s, idx) => (
-              <div key={idx} className="bg-white rounded-md p-4 border border-amber-100 flex justify-between items-center shadow-sm">
+              <div
+                key={idx}
+                className="bg-white rounded-md p-4 border border-amber-100 flex justify-between items-center shadow-sm"
+              >
                 <div>
                   <p className="text-gray-800 font-medium">{s.message}</p>
                 </div>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   className="text-amber-700 border-amber-300 hover:bg-amber-100"
                   onClick={() => handleApplySuggestion(s.orderCodes)}
                 >
@@ -118,7 +143,9 @@ export default function SuggestionsPage() {
             ))}
           </div>
         ) : (
-          <p className="text-amber-700">Không có gợi ý gộp đơn nào tối ưu tại thời điểm này.</p>
+          <p className="text-amber-700">
+            Không có gợi ý gộp đơn nào tối ưu tại thời điểm này.
+          </p>
         )}
       </div>
 
@@ -170,8 +197,16 @@ export default function SuggestionsPage() {
 
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-6">
         <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-          <h2 className="font-semibold text-gray-800">Danh sách Đơn hàng chờ xử lý</h2>
-          <span className="text-sm text-gray-500">Đã chọn: <span className="font-bold text-blue-600">{selectedOrderIds.length}</span> đơn hàng</span>
+          <h2 className="font-semibold text-gray-800">
+            Danh sách Đơn hàng chờ xử lý
+          </h2>
+          <span className="text-sm text-gray-500">
+            Đã chọn:{" "}
+            <span className="font-bold text-blue-600">
+              {selectedOrderIds.length}
+            </span>{" "}
+            đơn hàng
+          </span>
         </div>
         <Table>
           <TableHeader>
@@ -184,21 +219,34 @@ export default function SuggestionsPage() {
           </TableHeader>
           <TableBody>
             {orders.map((o) => (
-              <TableRow key={o.id} className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleOrder(o.id)}>
+              <TableRow
+                key={o.id}
+                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => toggleOrder(o.id)}
+              >
                 <TableCell className="text-center">
                   <div className="flex justify-center">
-                    {selectedOrderIds.includes(o.id) ? 
-                      <CheckSquare className="text-blue-600" size={20} /> : 
+                    {selectedOrderIds.includes(o.id) ? (
+                      <CheckSquare className="text-blue-600" size={20} />
+                    ) : (
                       <Square className="text-gray-400" size={20} />
-                    }
+                    )}
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-gray-800">{o.orderCode}</TableCell>
-                <TableCell>{new Date(o.createdAt).toLocaleString('vi-VN')}</TableCell>
+                <TableCell className="font-medium text-gray-800">
+                  {o.orderCode}
+                </TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                    o.status === 'draft' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-600'
-                  }`}>
+                  {new Date(o.createdAt).toLocaleString("vi-VN")}
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-semibold ${
+                      o.status === "draft"
+                        ? "bg-gray-100 text-gray-600"
+                        : "bg-blue-100 text-blue-600"
+                    }`}
+                  >
                     {o.status}
                   </span>
                 </TableCell>
@@ -206,7 +254,10 @@ export default function SuggestionsPage() {
             ))}
             {orders.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-8 text-gray-500"
+                >
                   Không có đơn hàng nào đang chờ.
                 </TableCell>
               </TableRow>
@@ -216,14 +267,14 @@ export default function SuggestionsPage() {
       </div>
 
       <div className="flex justify-end">
-        <Button 
-          size="lg" 
+        <Button
+          size="lg"
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md"
           onClick={handleRunPacking}
           disabled={packing || selectedOrderIds.length === 0}
         >
           <Scissors size={20} />
-          {packing ? 'Đang chạy thuật toán...' : 'Chạy Xếp Hình (Run Packing)'}
+          {packing ? "Đang chạy thuật toán..." : "Chạy Xếp Hình (Run Packing)"}
         </Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import { processPackingForOrders } from '../services/packing/grouping.service';
+import { Request, Response } from "express";
+import { processPackingForOrders } from "../services/packing/grouping.service";
 import { DEFAULT_SHEETS, SheetOption } from '../services/packing/packer.service';
-import prisma from '../db/prisma';
+import prisma from "../db/prisma";
 
 const ALL_POSSIBLE_SHEETS: SheetOption[] = [
   { name: '160x200', width: 1600, height: 2000 },
@@ -12,9 +12,9 @@ const ALL_POSSIBLE_SHEETS: SheetOption[] = [
 export const runPacking = async (req: Request, res: Response): Promise<any> => {
   try {
     const { orderIds, kerf, sheetNames } = req.body;
-    
+
     if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
-      return res.status(400).json({ error: 'orderIds array is required' });
+      return res.status(400).json({ error: "orderIds array is required" });
     }
 
     // Tạm thời xóa hết mẻ cắt cũ trước khi chạy packing mới để dễ test
@@ -31,58 +31,69 @@ export const runPacking = async (req: Request, res: Response): Promise<any> => {
     const kerfValue = kerf !== undefined ? Number(kerf) : undefined;
 
     const batches = await processPackingForOrders(orderIds, selectedSheets, kerfValue);
-    
+
     // Update order status to 'processing' or 'packed'
     await prisma.order.updateMany({
       where: { id: { in: orderIds } },
-      data: { status: 'processing' }
+      data: { status: "processing" },
     });
 
-    res.json({ message: 'Packing completed', batches });
+    res.json({ message: "Packing completed", batches });
   } catch (error: any) {
-    console.error('Error running packing:', error);
-    res.status(500).json({ error: 'Failed to run packing', details: error.message });
+    console.error("Error running packing:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to run packing", details: error.message });
   }
 };
 
 export const getBatches = async (req: Request, res: Response) => {
   try {
-    const batches = await prisma.cuttingBatch.findMany({
+    const runs = await prisma.packingRun.findMany({
       include: {
-        material: true,
-        reports: true,
-        _count: {
-          select: { items: true }
+        batches: {
+          include: {
+            reports: true,
+            _count: {
+              select: { items: true }
+            }
+          }
         }
       },
       orderBy: { createdAt: 'desc' }
     });
-    res.json(batches);
+    res.json(runs);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to fetch batches', details: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch batches", details: error.message });
   }
 };
 
 export const getBatchById = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const batch = await prisma.cuttingBatch.findUnique({
+    const run = await prisma.packingRun.findUnique({
       where: { id },
       include: {
-        material: true,
-        reports: true,
-        items: {
+        batches: {
           include: {
-            orderItem: {
+            material: true,
+            reports: true,
+            items: {
               include: {
-                order: true
-              }
-            },
-            partPiece: {
-              include: {
-                productPart: {
+                orderItem: {
                   include: {
-                    product: true
+                    order: true
+                  }
+                },
+                partPiece: {
+                  include: {
+                    productPart: {
+                      include: {
+                        product: true
+                      }
+                    }
                   }
                 }
               }
@@ -91,24 +102,64 @@ export const getBatchById = async (req: Request, res: Response): Promise<any> =>
         }
       }
     });
-    if (!batch) {
-      return res.status(404).json({ error: 'Batch not found' });
+    if (!run) {
+      return res.status(404).json({ error: 'Run not found' });
     }
-    res.json(batch);
+    res.json(run);
   } catch (error: any) {
-    console.error('Error fetching batch:', error);
-    res.status(500).json({ error: 'Failed to fetch batch details', details: error.message });
+    console.error("Error fetching batch:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch batch details", details: error.message });
   }
 };
 
-import { generatePackingSuggestions } from '../services/packing/suggestion.service';
+import { generatePackingSuggestions } from "../services/packing/suggestion.service";
 
 export const getSuggestions = async (req: Request, res: Response) => {
   try {
     const suggestions = await generatePackingSuggestions();
     res.json(suggestions);
   } catch (error: any) {
-    console.error('Error generating suggestions:', error);
-    res.status(500).json({ error: 'Failed to generate suggestions', details: error.message });
+    console.error("Error generating suggestions:", error);
+    res
+      .status(500)
+      .json({
+        error: "Failed to generate suggestions",
+        details: error.message,
+      });
+  }
+};
+
+export const deleteBatch = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    await prisma.packingRun.delete({
+      where: { id }
+    });
+    res.json({ message: 'Batch deleted successfully' });
+  } catch (error: any) {
+    console.error('Error deleting batch:', error);
+    res.status(500).json({ error: 'Failed to delete batch', details: error.message });
+  }
+};
+
+export const updateBatchStatus = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required' });
+    }
+
+    const updatedBatch = await prisma.packingRun.update({
+      where: { id },
+      data: { status }
+    });
+    res.json({ message: 'Batch status updated successfully', batch: updatedBatch });
+  } catch (error: any) {
+    console.error('Error updating batch status:', error);
+    res.status(500).json({ error: 'Failed to update batch status', details: error.message });
   }
 };

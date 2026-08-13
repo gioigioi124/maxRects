@@ -71,7 +71,16 @@ export async function processPackingForOrders(
     }
   }
 
-  // 3. Run packer for each group and save results
+  // 3. Create a Packing Run
+  const runName = orders.length === 1 
+    ? `Mẻ cắt đơn hàng ${orders[0].orderCode}` 
+    : `Mẻ cắt ${orders.length} đơn hàng`;
+
+  const packingRun = await prisma.packingRun.create({
+    data: { name: runName }
+  });
+
+  // 4. Run packer for each group and save results
   const createdBatches = [];
 
   for (const [key, group] of groups.entries()) {
@@ -95,6 +104,7 @@ export async function processPackingForOrders(
       // Save to database
       const batch = await prisma.cuttingBatch.create({
         data: {
+          packingRunId: packingRun.id,
           materialId,
           thickness: Number(thickness),
           status: 'suggested',
