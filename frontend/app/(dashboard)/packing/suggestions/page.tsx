@@ -19,6 +19,7 @@ export default function SuggestionsPage() {
   const [packing, setPacking] = useState(false);
   const [kerf, setKerf] = useState<number>(3);
   const [sheetNames, setSheetNames] = useState<string[]>(['160x200', '180x200']);
+  const [optimizationMode, setOptimizationMode] = useState<"GUILLOTINE" | "AREA">("GUILLOTINE");
 
   useEffect(() => {
     // Lấy gợi ý
@@ -63,7 +64,7 @@ export default function SuggestionsPage() {
       const res = await fetch("http://localhost:3001/packing/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderIds: selectedOrderIds, kerf, sheetNames }),
+        body: JSON.stringify({ orderIds: selectedOrderIds, kerf, sheetNames, optimizationMode }),
       });
       const data = await res.json();
 
@@ -151,7 +152,7 @@ export default function SuggestionsPage() {
 
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Cài đặt Thuật toán Xếp hình</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Khoảng cách giữa các nhát cắt (Kerf / mm)
@@ -191,6 +192,39 @@ export default function SuggestionsPage() {
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-2 italic">Lưu ý: Mút EP hệ thống sẽ tự động ép dùng khổ 1600x2000.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Chiến lược tối ưu cắt
+            </label>
+            <div className="space-y-3">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="optMode"
+                  className="mt-1 text-blue-600 focus:ring-blue-500"
+                  checked={optimizationMode === "GUILLOTINE"}
+                  onChange={() => setOptimizationMode("GUILLOTINE")}
+                />
+                <div>
+                  <span className="text-sm font-semibold text-gray-800 block">Ưu tiên đường thẳng dài (Guillotine)</span>
+                  <span className="text-xs text-gray-500">Giúp thợ dễ cắt, chẻ phôi thẳng tuột, tiết kiệm công thợ.</span>
+                </div>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="optMode"
+                  className="mt-1 text-blue-600 focus:ring-blue-500"
+                  checked={optimizationMode === "AREA"}
+                  onChange={() => setOptimizationMode("AREA")}
+                />
+                <div>
+                  <span className="text-sm font-semibold text-gray-800 block">Tối ưu khít diện tích tuyệt đối</span>
+                  <span className="text-xs text-gray-500">Máy tính tự xoay lộn xộn để nhét được nhiều chi tiết nhất, tiết kiệm mút tối đa.</span>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>

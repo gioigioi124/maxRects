@@ -55,6 +55,7 @@ export function runPacker(
   pieces: PackingPiece[],
   sheets: SheetOption[] = DEFAULT_SHEETS,
   kerf: number = 0,
+  optimizationMode: "AREA" | "GUILLOTINE" = "GUILLOTINE"
 ): PackedResult {
   if (pieces.length === 0) {
     return { totalSheets: 0, efficiency: 0, bins: [], packedCount: 0 };
@@ -81,7 +82,21 @@ export function runPacker(
     let bestResult: PackedResult = { totalSheets: Infinity, efficiency: -1, bins: [], packedCount: -1 };
     
     for (const sheet of allowedSheets) {
-      const validItemsForSheet = items.filter((item) => {
+      const validItemsForSheet = items.map(item => {
+        if (optimizationMode === "GUILLOTINE") {
+          // Normalize to horizontal (width >= height) for uniform stacking
+          let w = Math.max(item.width, item.height);
+          let h = Math.min(item.width, item.height);
+          
+          // If it exceeds the sheet dimensions in horizontal orientation, flip it to vertical
+          if (w > sheet.width || h > sheet.height) {
+            w = Math.min(item.width, item.height);
+            h = Math.max(item.width, item.height);
+          }
+          return { ...item, width: w, height: h };
+        }
+        return item;
+      }).filter((item) => {
         const fitsNormally = item.width <= sheet.width && item.height <= sheet.height;
         const fitsRotated = item.width <= sheet.height && item.height <= sheet.width;
         return fitsNormally || fitsRotated;
@@ -90,15 +105,50 @@ export function runPacker(
       if (validItemsForSheet.length === 0) continue;
 
       try {
-        const resultBins = packer(
-          { binWidth: sheet.width, binHeight: sheet.height, items: validItemsForSheet },
-          { kerfSize: kerf, allowRotation: true, sortStrategy: SortStrategy.Area, splitStrategy: SplitStrategy.ShortLeftoverAxisSplit, selectionStrategy: SelectionStrategy.BEST_AREA_FIT }
-        );
+        let strategyConfigs: any[] = [];
 
-        if (resultBins) {
-          const parsedResult = parseResult(resultBins, sheet);
-          if (isBetterResult(parsedResult, bestResult)) {
-            bestResult = parsedResult;
+        if (optimizationMode === "GUILLOTINE") {
+          strategyConfigs = [
+            {
+              sort: SortStrategy.LongSide,
+              split: SplitStrategy.ShortLeftoverAxisSplit,
+              select: SelectionStrategy.BEST_SHORT_SIDE_FIT,
+            },
+            {
+              sort: SortStrategy.Area,
+              split: SplitStrategy.ShortLeftoverAxisSplit,
+              select: SelectionStrategy.BEST_SHORT_SIDE_FIT,
+            },
+          ];
+        } else {
+          // AREA mode
+          strategyConfigs = [
+            {
+              sort: SortStrategy.Area,
+              split: SplitStrategy.ShortLeftoverAxisSplit,
+              select: SelectionStrategy.BEST_AREA_FIT,
+            },
+            {
+              sort: SortStrategy.LongSide,
+              split: SplitStrategy.ShortLeftoverAxisSplit,
+              select: SelectionStrategy.BEST_AREA_FIT,
+            }
+          ];
+        }
+
+        const isAllowRotation = optimizationMode === "AREA";
+
+        for (const config of strategyConfigs) {
+          const resultBins = packer(
+            { binWidth: sheet.width, binHeight: sheet.height, items: validItemsForSheet },
+            { kerfSize: kerf, allowRotation: isAllowRotation, sortStrategy: config.sort, splitStrategy: config.split, selectionStrategy: config.select }
+          );
+
+          if (resultBins) {
+            const parsedResult = parseResult(resultBins, sheet);
+            if (isBetterResult(parsedResult, bestResult)) {
+              bestResult = parsedResult;
+            }
           }
         }
       } catch (err) {

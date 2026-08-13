@@ -7,7 +7,8 @@ const DEFAULT_KERF = 3; // 3mm standard
 export async function processPackingForOrders(
   orderIds: string[],
   sheets: SheetOption[] = DEFAULT_SHEETS,
-  kerf: number = DEFAULT_KERF
+  kerf: number = DEFAULT_KERF,
+  optimizationMode: "AREA" | "GUILLOTINE" = "GUILLOTINE"
 ) {
   // 1. Fetch all order items and their pieces
   const orders = await prisma.order.findMany({
@@ -98,7 +99,7 @@ export async function processPackingForOrders(
     }
 
     // Run packer with multi-heuristic approach and kerf
-    const result = runPacker(group.pieces, groupSheets, kerf);
+    const result = runPacker(group.pieces, groupSheets, kerf, optimizationMode);
 
     if (result.bins.length > 0) {
       // Save to database

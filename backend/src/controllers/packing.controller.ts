@@ -11,14 +11,11 @@ const ALL_POSSIBLE_SHEETS: SheetOption[] = [
 
 export const runPacking = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { orderIds, kerf, sheetNames } = req.body;
+    const { orderIds, kerf, sheetNames, optimizationMode } = req.body;
 
     if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
       return res.status(400).json({ error: "orderIds array is required" });
     }
-
-    // Tạm thời xóa hết mẻ cắt cũ trước khi chạy packing mới để dễ test
-    await prisma.cuttingBatch.deleteMany({});
 
     let selectedSheets = DEFAULT_SHEETS;
     if (sheetNames && Array.isArray(sheetNames)) {
@@ -29,8 +26,9 @@ export const runPacking = async (req: Request, res: Response): Promise<any> => {
     }
 
     const kerfValue = kerf !== undefined ? Number(kerf) : undefined;
+    const mode = optimizationMode || "GUILLOTINE";
 
-    const batches = await processPackingForOrders(orderIds, selectedSheets, kerfValue);
+    const batches = await processPackingForOrders(orderIds, selectedSheets, kerfValue, mode);
 
     // Update order status to 'processing' or 'packed'
     await prisma.order.updateMany({
@@ -134,6 +132,27 @@ export const getSuggestions = async (req: Request, res: Response) => {
 export const deleteBatch = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
+    // Find all batches to delete their children manually (in case DB is missing cascade)
+    const batches = await prisma.cuttingBatch.findMany({
+      where: { packingRunId: id },
+      select: { id: true }
+    });
+    const batchIds = batches.map(b => b.id);
+
+    if (batchIds.length > 0) {
+      await prisma.cuttingBatchItem.deleteMany({
+        where: { cuttingBatchId: { in: batchIds } }
+      });
+      await prisma.packingReport.deleteMany({
+        where: { cuttingBatchId: { in: batchIds } }
+      });
+    }
+
+    // Manual cascade since schema doesn't have onDelete: Cascade for this relation
+    await prisma.cuttingBatch.deleteMany({
+      where: { packingRunId: id }
+    });
+
     await prisma.packingRun.delete({
       where: { id }
     });
