@@ -38,20 +38,20 @@ export default function OrdersPage() {
     }
   };
 
-  if (loading) return <div className="p-6">Đang tải...</div>;
+  if (loading) return <div className="p-4 sm:p-6 text-sm text-gray-500">Đang tải...</div>;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý Đơn hàng</h1>
-        <Link href="/orders/new">
-          <Button className="flex items-center gap-2">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Quản lý Đơn hàng</h1>
+        <Link href="/orders/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto flex items-center justify-center gap-2">
             <Plus size={16} /> Tạo đơn hàng mới
           </Button>
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow border">
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -65,25 +65,25 @@ export default function OrdersPage() {
           <TableBody>
             {orders.map((order: any) => (
               <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.orderCode}</TableCell>
+                <TableCell className="font-semibold text-gray-900">{order.orderCode}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold inline-block ${
                     order.status === 'draft' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-600'
                   }`}>
                     {order.status}
                   </span>
                 </TableCell>
                 <TableCell>{order._count?.items || 0} mã</TableCell>
-                <TableCell>{new Date(order.createdAt).toLocaleString('vi-VN')}</TableCell>
+                <TableCell className="text-xs sm:text-sm whitespace-nowrap">{new Date(order.createdAt).toLocaleString('vi-VN')}</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end items-center gap-2">
                     <Link href={`/orders/${order.id}`}>
-                      <Button variant="outline" size="sm" className="h-8 flex items-center gap-1">
-                        <Eye size={14} /> Xem
+                      <Button variant="outline" size="sm" className="h-8 px-2.5 flex items-center gap-1">
+                        <Eye size={14} /> <span className="hidden sm:inline">Xem</span>
                       </Button>
                     </Link>
-                    <Button variant="destructive" size="sm" className="h-8 flex items-center gap-1" onClick={() => handleDelete(order.id)}>
-                      <Trash2 size={14} /> Xóa
+                    <Button variant="destructive" size="sm" className="h-8 px-2.5 flex items-center gap-1" onClick={() => handleDelete(order.id)}>
+                      <Trash2 size={14} /> <span className="hidden sm:inline">Xóa</span>
                     </Button>
                   </div>
                 </TableCell>

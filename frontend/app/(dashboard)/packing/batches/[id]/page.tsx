@@ -82,48 +82,48 @@ export default function BatchDetailPage({
     return Array.from(map.values()).sort((a, b) => a.materialName.localeCompare(b.materialName));
   }, [run]);
 
-  if (!run) return <div className="p-6">Đang tải...</div>;
+  if (!run) return <div className="p-4 sm:p-6 text-sm text-gray-500">Đang tải...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto p-6 print:p-0">
-      <div className="mb-6 flex justify-between items-center print:hidden">
-        <div className="flex items-center gap-4">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 print:p-0">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 print:hidden">
+        <div className="flex items-center gap-3">
           <Link href="/packing/batches">
-            <Button variant="outline" size="icon">
-              <ArrowLeft size={20} />
+            <Button variant="outline" size="icon" className="h-9 w-9">
+              <ArrowLeft size={18} />
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               Sơ Đồ Cắt (Layout) - {run.name}
             </h1>
-            <p className="text-gray-500">
+            <p className="text-xs sm:text-sm text-gray-500">
               Mã Lượt: {run.id.substring(0, 8)}... | Bao gồm {run.batches?.length || 0} loại phôi
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
           {viewMode === "TABLE" ? (
             <Button
-              className="bg-green-600 hover:bg-green-700 print:hidden"
+              className="bg-green-600 hover:bg-green-700 print:hidden w-full sm:w-auto text-sm"
               onClick={() => setViewMode("ALL")}
             >
-              <Printer className="mr-2" size={18} /> In phiếu cắt tổng hợp
+              <Printer className="mr-2" size={16} /> In phiếu cắt tổng hợp
             </Button>
           ) : (
             <>
               <Button
                 variant="outline"
-                className="print:hidden"
+                className="print:hidden text-sm flex-1 sm:flex-none"
                 onClick={() => setViewMode("TABLE")}
               >
-                <ArrowLeft className="mr-2" size={18} /> Quay lại bảng
+                <ArrowLeft className="mr-1.5" size={16} /> Quay lại bảng
               </Button>
               <Button
-                className="bg-blue-600 hover:bg-blue-700 print:hidden"
+                className="bg-blue-600 hover:bg-blue-700 print:hidden text-sm flex-1 sm:flex-none"
                 onClick={() => window.print()}
               >
-                <Printer className="mr-2" size={18} /> 
+                <Printer className="mr-1.5" size={16} /> 
                 {viewMode === "ALL" ? "In Tất Cả" : "In Phiếu Cắt"}
               </Button>
             </>

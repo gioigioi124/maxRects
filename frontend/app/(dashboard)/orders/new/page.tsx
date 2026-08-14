@@ -125,15 +125,15 @@ export default function NewOrderPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <Link href="/orders" className="flex items-center text-blue-600 hover:underline">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+      <div className="mb-4 sm:mb-6">
+        <Link href="/orders" className="inline-flex items-center text-sm text-blue-600 hover:underline">
           <ArrowLeft size={16} className="mr-1" /> Quay lại danh sách
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow border p-6 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Tạo Đơn hàng mới</h1>
+      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Tạo Đơn hàng mới</h1>
         
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Mã Đơn hàng (PO/Invoice)</label>
@@ -141,13 +141,13 @@ export default function NewOrderPage() {
             value={orderCode} 
             onChange={(e) => setOrderCode(e.target.value)} 
             placeholder="Ví dụ: PO-2026-08-01"
-            className="max-w-md"
+            className="w-full sm:max-w-md"
           />
         </div>
 
-        <div className="border-t pt-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Thêm sản phẩm vào đơn</h2>
+        <div className="border-t pt-6 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800">Thêm sản phẩm vào đơn</h2>
             <div>
               <input 
                 type="file" 
@@ -159,16 +159,18 @@ export default function NewOrderPage() {
               <Button 
                 variant="outline" 
                 type="button" 
+                size="sm"
                 onClick={() => document.getElementById('excel-upload')?.click()}
+                className="w-full sm:w-auto"
               >
                 Nhập từ file Excel
               </Button>
             </div>
           </div>
           
-          <div className="flex gap-4 items-end">
-            <div className="flex-1 max-w-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Chọn Mã hàng</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end bg-gray-50 p-4 rounded-lg border">
+            <div className="w-full">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">Chọn Mã hàng</label>
               <select 
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={selectedProductId}
@@ -183,8 +185,8 @@ export default function NewOrderPage() {
                 ))}
               </select>
             </div>
-            <div className="flex-1 max-w-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Chọn Chi tiết</label>
+            <div className="w-full">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">Chọn Chi tiết</label>
               <select 
                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={selectedPartId}
@@ -197,23 +199,24 @@ export default function NewOrderPage() {
                 ))}
               </select>
             </div>
-            <div className="w-24">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng (Bộ)</label>
+            <div className="w-full">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">Số lượng (Bộ)</label>
               <Input 
                 type="number" 
                 min="1" 
                 value={selectedQuantity} 
                 onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 1)} 
+                className="w-full"
               />
             </div>
-            <Button onClick={handleAddItem} variant="secondary" className="flex items-center gap-2">
-              <Plus size={16} /> Thêm
+            <Button onClick={handleAddItem} variant="secondary" className="w-full flex items-center justify-center gap-2">
+              <Plus size={16} /> Thêm vào đơn
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow border overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -226,11 +229,11 @@ export default function NewOrderPage() {
           <TableBody>
             {items.map((item) => (
               <TableRow key={item.productPartId}>
-                <TableCell className="font-medium">{item.productCode}</TableCell>
+                <TableCell className="font-semibold text-gray-900">{item.productCode}</TableCell>
                 <TableCell>{item.partName}</TableCell>
-                <TableCell>{item.setQuantity}</TableCell>
+                <TableCell className="font-bold">{item.setQuantity}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => handleRemoveItem(item.productPartId)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                  <Button variant="ghost" size="sm" onClick={() => handleRemoveItem(item.productPartId)} className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2">
                     <Trash2 size={16} />
                   </Button>
                 </TableCell>
@@ -248,7 +251,7 @@ export default function NewOrderPage() {
         
         {items.length > 0 && (
           <div className="p-4 bg-gray-50 border-t flex justify-end">
-            <Button onClick={handleSave} className="flex items-center gap-2">
+            <Button onClick={handleSave} className="w-full sm:w-auto flex items-center justify-center gap-2">
               <Save size={16} /> Lưu Đơn Hàng
             </Button>
           </div>

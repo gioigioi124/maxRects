@@ -78,65 +78,67 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }
   };
 
-  if (loading) return <div className="p-6">Đang tải...</div>;
-  if (!product || product.error) return <div className="p-6 text-red-500">Không tìm thấy mã hàng!</div>;
+  if (loading) return <div className="p-4 sm:p-6 text-sm text-gray-500">Đang tải...</div>;
+  if (!product || product.error) return <div className="p-4 sm:p-6 text-red-500 font-medium">Không tìm thấy mã hàng!</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-6">
-        <Link href="/products" className="flex items-center text-blue-600 hover:underline">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <Link href="/products" className="inline-flex items-center text-sm text-blue-600 hover:underline">
           <ArrowLeft size={16} className="mr-1" /> Quay lại danh sách
         </Link>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-sm border mb-6 flex justify-between items-start">
-        <div>
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="w-full sm:w-auto">
           {isEditing ? (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl font-bold text-gray-800">Mã hàng:</span>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-xl sm:text-2xl font-bold text-gray-800">Mã hàng:</span>
               <input 
                 type="text" 
                 value={editCode}
                 onChange={e => setEditCode(e.target.value)}
-                className="border rounded px-2 py-1 text-lg font-bold"
+                className="border rounded px-2 py-1 text-base sm:text-lg font-bold max-w-[180px] sm:max-w-xs focus:ring-2 focus:ring-blue-500"
                 autoFocus
               />
-              <button 
-                onClick={handleSave}
-                disabled={saving}
-                className="p-1 text-green-600 hover:bg-green-50 rounded"
-                title="Lưu"
-              >
-                <Check size={20} />
-              </button>
-              <button 
-                onClick={() => { setIsEditing(false); setEditCode(product.code); }}
-                disabled={saving}
-                className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-                title="Hủy"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="p-1.5 text-green-600 hover:bg-green-50 rounded"
+                  title="Lưu"
+                >
+                  <Check size={20} />
+                </button>
+                <button 
+                  onClick={() => { setIsEditing(false); setEditCode(product.code); }}
+                  disabled={saving}
+                  className="p-1.5 text-gray-500 hover:bg-gray-100 rounded"
+                  title="Hủy"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-800">Mã hàng: {product.code}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Mã hàng: {product.code}</h1>
               <button 
                 onClick={() => setIsEditing(true)}
-                className="text-gray-400 hover:text-blue-600 transition-colors"
+                className="text-gray-400 hover:text-blue-600 transition-colors p-1"
                 title="Sửa mã hàng"
               >
                 <Edit2 size={18} />
               </button>
             </div>
           )}
-          <p className="text-gray-500 text-sm mb-4">Ngày cập nhật: {new Date(product.updatedAt).toLocaleString('vi-VN')}</p>
+          <p className="text-gray-500 text-xs sm:text-sm">Ngày cập nhật: {new Date(product.updatedAt).toLocaleString('vi-VN')}</p>
         </div>
-        <div>
+        <div className="w-full sm:w-auto flex justify-end">
           <button 
             onClick={handleDelete}
             disabled={deleting}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-50 transition-colors"
+            className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-50 transition-colors"
           >
             <Trash2 size={16} />
             {deleting ? 'Đang xóa...' : 'Xóa mã hàng'}
@@ -144,38 +146,40 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Chi tiết các bộ phận</h2>
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Chi tiết các bộ phận</h2>
       
       <div className="space-y-6">
         {product.parts.map((part: any) => (
           <div key={part.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-              <h3 className="font-semibold text-gray-700">{part.partName}</h3>
+              <h3 className="font-semibold text-gray-700 text-sm sm:text-base">{part.partName}</h3>
             </div>
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left font-medium text-gray-500">Kích thước (Cạnh 1, 2, 3)</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-500">Loại mút</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-500">Dày x Rộng x Dài</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-500">Số lượng/Bộ</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {part.pieces.map((piece: any) => (
-                  <tr key={piece.id}>
-                    <td className="px-4 py-2 text-gray-700">
-                      {piece.edge1} x {piece.edge2} x {piece.edge3}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700">{piece.material?.name}</td>
-                    <td className="px-4 py-2 text-blue-600 font-medium">
-                      {piece.thickness ?? Math.min(piece.edge1, piece.edge2, piece.edge3)} x {piece.width} x {piece.height}
-                    </td>
-                    <td className="px-4 py-2 font-bold">{piece.quantity}</td>
+            <div className="overflow-x-auto w-full">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">Kích thước (Cạnh 1, 2, 3)</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">Loại mút</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">Dày x Rộng x Dài</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider">Số lượng/Bộ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {part.pieces.map((piece: any) => (
+                    <tr key={piece.id}>
+                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                        {piece.edge1} x {piece.edge2} x {piece.edge3}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{piece.material?.name}</td>
+                      <td className="px-4 py-3 text-blue-600 font-medium whitespace-nowrap">
+                        {piece.thickness ?? Math.min(piece.edge1, piece.edge2, piece.edge3)} x {piece.width} x {piece.height}
+                      </td>
+                      <td className="px-4 py-3 font-bold whitespace-nowrap">{piece.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ))}
       </div>

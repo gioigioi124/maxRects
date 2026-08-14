@@ -104,39 +104,39 @@ export default function SuggestionsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
           Gợi Ý & Xếp Hình (Packing)
         </h1>
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 text-xs sm:text-sm">
           Hệ thống sẽ tự động ghép các chi tiết cùng loại mút và độ dày để tối
           ưu hoá việc sử dụng phôi.
         </p>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8 shadow-sm">
-        <h2 className="text-lg font-semibold text-amber-800 flex items-center gap-2 mb-4">
-          <Lightbulb className="text-amber-500" />
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm">
+        <h2 className="text-base sm:text-lg font-semibold text-amber-800 flex items-center gap-2 mb-4">
+          <Lightbulb className="text-amber-500" size={20} />
           Gợi ý gộp đơn tiện lợi
         </h2>
 
         {loadingSuggestions ? (
-          <p className="text-amber-700">Đang phân tích dữ liệu...</p>
+          <p className="text-amber-700 text-xs sm:text-sm">Đang phân tích dữ liệu...</p>
         ) : suggestions.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {suggestions.map((s, idx) => (
               <div
                 key={idx}
-                className="bg-white rounded-md p-4 border border-amber-100 flex justify-between items-center shadow-sm"
+                className="bg-white rounded-lg p-3.5 sm:p-4 border border-amber-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm"
               >
                 <div>
-                  <p className="text-gray-800 font-medium">{s.message}</p>
+                  <p className="text-gray-800 font-medium text-xs sm:text-sm">{s.message}</p>
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-amber-700 border-amber-300 hover:bg-amber-100"
+                  className="text-amber-700 border-amber-300 hover:bg-amber-100 w-full sm:w-auto"
                   onClick={() => handleApplySuggestion(s.orderCodes)}
                 >
                   Áp dụng (Chọn)
@@ -145,17 +145,17 @@ export default function SuggestionsPage() {
             ))}
           </div>
         ) : (
-          <p className="text-amber-700">
+          <p className="text-amber-700 text-xs sm:text-sm">
             Không có gợi ý gộp đơn nào tối ưu tại thời điểm này.
           </p>
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Cài đặt thông số Xếp hình</h2>
+      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Cài đặt thông số Xếp hình</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Khoảng cách giữa các nhát cắt (Kerf / mm)
             </label>
             <input 
@@ -168,15 +168,15 @@ export default function SuggestionsPage() {
             <p className="text-xs text-gray-500 mt-1">Độ dày lưỡi cưa hoặc khoảng cách tối thiểu giữa các chi tiết.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Kích thước tấm phôi ưu tiên
             </label>
             <div className="space-y-2">
               {['160x200', '180x200', '160x215'].map(size => (
-                <label key={size} className="flex items-center gap-2 cursor-pointer">
+                <label key={size} className="flex items-center gap-2 cursor-pointer py-0.5">
                   <input 
                     type="checkbox" 
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
                     checked={sheetNames.includes(size)}
                     onChange={(e) => {
                       if (e.target.checked) {
@@ -186,7 +186,7 @@ export default function SuggestionsPage() {
                       }
                     }}
                   />
-                  <span className="text-sm text-gray-800">
+                  <span className="text-xs sm:text-sm text-gray-800">
                     {size === '160x215' ? '1600x2150 (Ngoại cỡ)' : `${size.split('x')[0]}0x${size.split('x')[1]}0`}
                   </span>
                 </label>
@@ -195,7 +195,7 @@ export default function SuggestionsPage() {
             <p className="text-xs text-gray-500 mt-2 italic">Lưu ý: Mút EP hệ thống sẽ tự động ép dùng khổ 1600x2000.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Chiến lược tối ưu cắt
             </label>
             <div className="space-y-3">
@@ -203,12 +203,12 @@ export default function SuggestionsPage() {
                 <input 
                   type="radio" 
                   name="optMode"
-                  className="mt-1 text-blue-600 focus:ring-blue-500"
+                  className="mt-0.5 text-blue-600 focus:ring-blue-500 w-4 h-4 flex-shrink-0"
                   checked={optimizationMode === "GUILLOTINE"}
                   onChange={() => setOptimizationMode("GUILLOTINE")}
                 />
                 <div>
-                  <span className="text-sm font-semibold text-gray-800 block">Ưu tiên đường thẳng dài (Guillotine)</span>
+                  <span className="text-xs sm:text-sm font-semibold text-gray-800 block">Ưu tiên đường thẳng dài (Guillotine)</span>
                   <span className="text-xs text-gray-500">Giúp thợ dễ cắt, chẻ phôi thẳng tuột, tiết kiệm công thợ.</span>
                 </div>
               </label>
@@ -216,12 +216,12 @@ export default function SuggestionsPage() {
                 <input 
                   type="radio" 
                   name="optMode"
-                  className="mt-1 text-blue-600 focus:ring-blue-500"
+                  className="mt-0.5 text-blue-600 focus:ring-blue-500 w-4 h-4 flex-shrink-0"
                   checked={optimizationMode === "AREA"}
                   onChange={() => setOptimizationMode("AREA")}
                 />
                 <div>
-                  <span className="text-sm font-semibold text-gray-800 block">Tối ưu khít diện tích tuyệt đối</span>
+                  <span className="text-xs sm:text-sm font-semibold text-gray-800 block">Tối ưu khít diện tích tuyệt đối</span>
                   <span className="text-xs text-gray-500">Tự động xoay lộn xộn để nhét được nhiều chi tiết nhất, tiết kiệm mút tối đa.</span>
                 </div>
               </label>
@@ -231,11 +231,11 @@ export default function SuggestionsPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-6">
-        <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-          <h2 className="font-semibold text-gray-800">
+        <div className="p-4 bg-gray-50 border-b flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+          <h2 className="font-semibold text-gray-800 text-sm sm:text-base">
             Danh sách Đơn hàng chờ xử lý
           </h2>
-          <span className="text-sm text-gray-500">
+          <span className="text-xs sm:text-sm text-gray-500">
             Đã chọn:{" "}
             <span className="font-bold text-blue-600">
               {selectedOrderIds.length}
@@ -268,15 +268,15 @@ export default function SuggestionsPage() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-gray-800">
+                <TableCell className="font-semibold text-gray-800">
                   {o.orderCode}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-xs sm:text-sm whitespace-nowrap">
                   {new Date(o.createdAt).toLocaleString("vi-VN")}
                 </TableCell>
                 <TableCell>
                   <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
+                    className={`px-2 py-1 rounded text-xs font-semibold inline-block ${
                       o.status === "draft"
                         ? "bg-gray-100 text-gray-600"
                         : "bg-blue-100 text-blue-600"
@@ -304,7 +304,7 @@ export default function SuggestionsPage() {
       <div className="flex justify-end">
         <Button
           size="lg"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md text-sm sm:text-base py-3 sm:py-3.5"
           onClick={handleRunPacking}
           disabled={packing || selectedOrderIds.length === 0}
         >
