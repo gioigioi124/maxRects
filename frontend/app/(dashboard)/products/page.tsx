@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus } from 'lucide-react';
+import { API_BASE } from '@/lib/api-client';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -10,7 +11,7 @@ export default function ProductsPage() {
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    fetch('http://localhost:3001/products')
+    fetch(`${API_BASE}/products`)
       .then(res => res.json())
       .then(data => {
         setProducts(data);
@@ -29,7 +30,7 @@ export default function ProductsPage() {
     
     setDeleting(prev => ({ ...prev, [id]: true }));
     try {
-      const res = await fetch(`http://localhost:3001/products/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setProducts(products.filter(p => p.id !== id));
       } else {

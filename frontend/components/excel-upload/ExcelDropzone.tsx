@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import * as xlsx from 'xlsx';
 import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import { API_BASE } from '@/lib/api-client';
 
 export default function ExcelDropzone() {
   const [file, setFile] = useState<File | null>(null);
@@ -35,7 +36,7 @@ export default function ExcelDropzone() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:3001/products/import', {
+      const res = await fetch(`${API_BASE}/products/import`, {
         method: 'POST',
         body: formData,
       });

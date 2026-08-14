@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import { Printer, ChevronDown, ChevronUp } from 'lucide-react';
 import type { SheetItem } from './SheetCanvas';
 
+import { API_BASE } from '@/lib/api-client';
+
 const SheetCanvas = dynamic(() => import('./SheetCanvas'), { ssr: false });
 
 interface LayoutViewerProps {
@@ -39,7 +41,7 @@ export default function LayoutViewer({ batchId }: LayoutViewerProps) {
   const [expandedSheets, setExpandedSheets] = useState<Set<number>>(new Set([0]));
 
   useEffect(() => {
-    fetch(`http://localhost:3001/packing/batches/${batchId}`)
+    fetch(`${API_BASE}/packing/batches/${batchId}`)
       .then(res => res.json())
       .then(data => {
         setBatch(data);

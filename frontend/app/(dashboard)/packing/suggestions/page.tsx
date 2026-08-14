@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { API_BASE } from "@/lib/api-client";
 
 export default function SuggestionsPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export default function SuggestionsPage() {
 
   useEffect(() => {
     // Lấy gợi ý
-    fetch("http://localhost:3001/packing/suggestions")
+    fetch(`${API_BASE}/packing/suggestions`)
       .then((res) => res.json())
       .then((data) => {
         setSuggestions(data);
@@ -35,7 +36,7 @@ export default function SuggestionsPage() {
       });
 
     // Lấy danh sách đơn hàng chưa cắt
-    fetch("http://localhost:3001/orders")
+    fetch(`${API_BASE}/orders`)
       .then((res) => res.json())
       .then((data) => {
         // Lọc các đơn hàng chưa bị cắt hết
@@ -61,7 +62,7 @@ export default function SuggestionsPage() {
 
     setPacking(true);
     try {
-      const res = await fetch("http://localhost:3001/packing/run", {
+      const res = await fetch(`${API_BASE}/packing/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderIds: selectedOrderIds, kerf, sheetNames, optimizationMode }),
@@ -74,7 +75,7 @@ export default function SuggestionsPage() {
         );
         // Refresh orders and selected
         setSelectedOrderIds([]);
-        const ordersRes = await fetch("http://localhost:3001/orders");
+        const ordersRes = await fetch(`${API_BASE}/orders`);
         const ordersData = await ordersRes.json();
         setOrders(
           ordersData.filter(

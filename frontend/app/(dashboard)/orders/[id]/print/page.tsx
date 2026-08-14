@@ -2,6 +2,7 @@
 import React, { useEffect, useState, use, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { API_BASE } from '@/lib/api-client';
 
 function PrintContent({ id }: { id: string }) {
   const searchParams = useSearchParams();
@@ -11,7 +12,7 @@ function PrintContent({ id }: { id: string }) {
   const [order, setOrder] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/orders/${id}`)
+    fetch(`${API_BASE}/orders/${id}`)
       .then(res => res.json())
       .then(data => {
         setOrder(data);

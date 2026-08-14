@@ -5,6 +5,7 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { API_BASE } from "@/lib/api-client";
 
 export default function BatchDetailPage({
   params,
@@ -16,7 +17,7 @@ export default function BatchDetailPage({
   const [viewMode, setViewMode] = useState<"TABLE" | "ALL" | string>("TABLE");
 
   useEffect(() => {
-    fetch(`http://localhost:3001/packing/batches/${resolvedParams.id}`)
+    fetch(`${API_BASE}/packing/batches/${resolvedParams.id}`)
       .then((res) => res.json())
       .then((data) => setRun(data))
       .catch(console.error);

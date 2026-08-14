@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { API_BASE } from '@/lib/api-client';
 
 export default function NewOrderPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function NewOrderPage() {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
   useEffect(() => {
-    fetch('http://localhost:3001/products')
+    fetch(`${API_BASE}/products`)
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(console.error);
@@ -50,7 +51,7 @@ export default function NewOrderPage() {
     if (items.length === 0) return alert('Vui lòng thêm ít nhất 1 chi tiết');
 
     try {
-      const res = await fetch('http://localhost:3001/orders', {
+      const res = await fetch(`${API_BASE}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

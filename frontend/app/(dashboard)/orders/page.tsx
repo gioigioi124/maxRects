@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Plus, Eye, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { API_BASE } from '@/lib/api-client';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -11,7 +12,7 @@ export default function OrdersPage() {
 
   const fetchOrders = () => {
     setLoading(true);
-    fetch('http://localhost:3001/orders')
+    fetch(`${API_BASE}/orders`)
       .then(res => res.json())
       .then(data => {
         setOrders(data);
@@ -30,7 +31,7 @@ export default function OrdersPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) return;
     try {
-      await fetch(`http://localhost:3001/orders/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/orders/${id}`, { method: 'DELETE' });
       fetchOrders();
     } catch (e) {
       console.error(e);

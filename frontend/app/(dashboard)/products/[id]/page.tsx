@@ -3,6 +3,7 @@ import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Edit2, Trash2, Check, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { API_BASE } from '@/lib/api-client';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -19,7 +20,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const router = useRouter();
 
   useEffect(() => {
-    fetch(`http://localhost:3001/products/${id}`)
+    fetch(`${API_BASE}/products/${id}`)
       .then(res => res.json())
       .then(data => {
         setProduct(data);
@@ -38,7 +39,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     if (!editCode.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:3001/products/${id}`, {
+      const res = await fetch(`${API_BASE}/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: editCode.trim() })
@@ -62,7 +63,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     if (!confirm('Bạn có chắc chắn muốn xóa mã hàng này không? Tất cả các chi tiết của mã hàng sẽ bị xóa theo.')) return;
     setDeleting(true);
     try {
-      const res = await fetch(`http://localhost:3001/products/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
       if (res.ok) {
         router.push('/products');
       } else {

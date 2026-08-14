@@ -2,6 +2,7 @@
 import React, { useEffect, useState, use } from 'react';
 import OrderPrintView from '@/components/print/OrderPrintView';
 import PartPrintView from '@/components/print/PartPrintView';
+import { API_BASE } from '@/lib/api-client';
 
 export default function PrintPage({ params }: { params: Promise<{ type: string; id: string }> }) {
   const resolvedParams = use(params);
@@ -13,7 +14,7 @@ export default function PrintPage({ params }: { params: Promise<{ type: string; 
 
   useEffect(() => {
     if (type === 'order') {
-      fetch(`http://localhost:3001/orders/${id}`)
+      fetch(`${API_BASE}/orders/${id}`)
         .then(res => res.json())
         .then(data => {
           setOrder(data);
@@ -22,7 +23,7 @@ export default function PrintPage({ params }: { params: Promise<{ type: string; 
         })
         .catch(err => { console.error(err); setLoading(false); });
     } else if (type === 'product') {
-      fetch(`http://localhost:3001/products/${id}`)
+      fetch(`${API_BASE}/products/${id}`)
         .then(res => res.json())
         .then(data => {
           setProduct(data);

@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, Trash2, CheckCircle } from "lucide-react";
+import { API_BASE } from "@/lib/api-client";
 
 export default function BatchesPage() {
   const [runs, setRuns] = useState<any[]>([]);
   const [loadingAction, setLoadingAction] = useState<Record<string, string>>({});
 
   const fetchRuns = () => {
-    fetch("http://localhost:3001/packing/batches")
+    fetch(`${API_BASE}/packing/batches`)
       .then((res) => res.json())
       .then((data) => setRuns(data))
       .catch(console.error);
@@ -31,7 +32,7 @@ export default function BatchesPage() {
     if (!confirm('Bạn có chắc chắn muốn xóa lượt chạy (mẻ cắt) này?')) return;
     setLoadingAction(prev => ({ ...prev, [id]: 'deleting' }));
     try {
-      const res = await fetch(`http://localhost:3001/packing/batches/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/packing/batches/${id}`, { method: 'DELETE' });
       if (res.ok) fetchRuns();
       else alert('Xóa thất bại!');
     } catch (e) {
@@ -45,7 +46,7 @@ export default function BatchesPage() {
   const handleSave = async (id: string) => {
     setLoadingAction(prev => ({ ...prev, [id]: 'saving' }));
     try {
-      const res = await fetch(`http://localhost:3001/packing/batches/${id}/status`, {
+      const res = await fetch(`${API_BASE}/packing/batches/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'saved' })
