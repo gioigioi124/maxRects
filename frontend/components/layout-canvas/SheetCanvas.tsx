@@ -62,10 +62,10 @@ export default function SheetCanvas({ sheetWidth, sheetHeight, items, sheetLabel
 
             {/* Grid lines (every 100mm) */}
             {Array.from({ length: Math.floor(sheetWidth / 100) }, (_, i) => (
-              <Line key={`v${i}`} x={(i + 1) * 100} y={0} points={[0, 0, 0, sheetHeight]} stroke="#e5e7eb" strokeWidth={0.5} />
+              <Line key={`v${i}`} {...({ points: [(i + 1) * 100, 0, (i + 1) * 100, sheetHeight], stroke: "#e5e7eb", strokeWidth: 0.5 } as any)} />
             ))}
             {Array.from({ length: Math.floor(sheetHeight / 100) }, (_, i) => (
-              <Line key={`h${i}`} x={0} y={(i + 1) * 100} points={[0, 0, sheetWidth, 0]} stroke="#e5e7eb" strokeWidth={0.5} />
+              <Line key={`h${i}`} {...({ points: [0, (i + 1) * 100, sheetWidth, (i + 1) * 100], stroke: "#e5e7eb", strokeWidth: 0.5 } as any)} />
             ))}
 
             {/* Pieces */}
