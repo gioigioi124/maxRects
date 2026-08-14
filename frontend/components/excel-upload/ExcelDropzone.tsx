@@ -1,8 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import * as xlsx from 'xlsx';
-import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import { UploadCloud, CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { API_BASE } from '@/lib/api-client';
+import { downloadProductTemplate } from '@/lib/excel-template';
 
 export default function ExcelDropzone() {
   const [file, setFile] = useState<File | null>(null);
@@ -56,7 +57,15 @@ export default function ExcelDropzone() {
 
   return (
     <div className="p-4 sm:p-6 bg-white rounded-lg shadow-sm border">
-      <h2 className="text-lg sm:text-xl font-bold mb-4 text-gray-800">Nhập dữ liệu Mã hàng</h2>
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Nhập dữ liệu Mã hàng</h2>
+        <button
+          onClick={downloadProductTemplate}
+          className="inline-flex items-center justify-center gap-2 border border-gray-300 bg-white text-gray-700 px-3.5 py-2 rounded-lg hover:bg-gray-50 font-medium text-xs sm:text-sm transition-colors shadow-sm w-full sm:w-auto"
+        >
+          <Download size={16} /> Tải file Excel mẫu
+        </button>
+      </div>
       
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-10 text-center hover:bg-gray-50 transition-colors">
         <input 

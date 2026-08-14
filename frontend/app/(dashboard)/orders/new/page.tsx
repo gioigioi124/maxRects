@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { API_BASE } from '@/lib/api-client';
+import { downloadOrderTemplate } from '@/lib/excel-template';
 
 export default function NewOrderPage() {
   const router = useRouter();
@@ -148,7 +149,16 @@ export default function NewOrderPage() {
         <div className="border-t pt-6 mb-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800">Thêm sản phẩm vào đơn</h2>
-            <div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <Button 
+                variant="outline" 
+                type="button" 
+                size="sm"
+                onClick={downloadOrderTemplate}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5"
+              >
+                <Download size={15} /> Tải file Excel mẫu
+              </Button>
               <input 
                 type="file" 
                 accept=".xlsx, .xls" 

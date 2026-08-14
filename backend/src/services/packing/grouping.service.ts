@@ -73,9 +73,9 @@ export async function processPackingForOrders(
   }
 
   // 3. Create a Packing Run
-  const runName = orders.length === 1 
-    ? `Mẻ cắt đơn hàng ${orders[0].orderCode}` 
-    : `Mẻ cắt ${orders.length} đơn hàng`;
+  const cleanedCodes = orders.map(o => o.orderCode.trim().replace(/^đơn\s*/i, '')).join(', ');
+  const modeLabel = optimizationMode === "AREA" ? "tối ưu diện tích" : "tối ưu cho thợ";
+  const runName = `đơn ${cleanedCodes} - ${modeLabel}`;
 
   const packingRun = await prisma.packingRun.create({
     data: { name: runName }

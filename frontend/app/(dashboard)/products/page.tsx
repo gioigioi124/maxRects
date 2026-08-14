@@ -1,8 +1,9 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Download } from 'lucide-react';
 import { API_BASE } from '@/lib/api-client';
+import { downloadProductTemplate } from '@/lib/excel-template';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -49,12 +50,20 @@ export default function ProductsPage() {
     <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Danh sách Mã hàng</h1>
-        <Link 
-          href="/products/import" 
-          className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors shadow-sm w-full sm:w-auto"
-        >
-          <Plus size={18} /> Thêm Mã hàng (Excel)
-        </Link>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
+          <button
+            onClick={downloadProductTemplate}
+            className="inline-flex items-center justify-center gap-2 border border-gray-300 bg-white text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors shadow-sm w-full sm:w-auto"
+          >
+            <Download size={18} /> Tải file Excel mẫu
+          </button>
+          <Link 
+            href="/products/import" 
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors shadow-sm w-full sm:w-auto"
+          >
+            <Plus size={18} /> Thêm Mã hàng (Excel)
+          </Link>
+        </div>
       </div>
 
       <div className="mb-6 relative">

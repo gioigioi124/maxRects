@@ -45,6 +45,7 @@ export interface PackedResult {
 export const DEFAULT_SHEETS: SheetOption[] = [
   { name: "160x200", width: 1600, height: 2000 },
   { name: "180x200", width: 1800, height: 2000 },
+  { name: "160x215", width: 1600, height: 2150 },
 ];
 
 /**

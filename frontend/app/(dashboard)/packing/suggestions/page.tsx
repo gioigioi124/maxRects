@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Lightbulb, Scissors, CheckSquare, Square } from "lucide-react";
+import { Lightbulb, Scissors, CheckSquare, Square, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -18,8 +18,10 @@ export default function SuggestionsPage() {
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [packing, setPacking] = useState(false);
+  const [packingProgress, setPackingProgress] = useState<number>(0);
+  const [packingStatusText, setPackingStatusText] = useState<string>("");
   const [kerf, setKerf] = useState<number>(3);
-  const [sheetNames, setSheetNames] = useState<string[]>(['160x200', '180x200']);
+  const [sheetNames, setSheetNames] = useState<string[]>(['160x200', '180x200', '160x215']);
   const [optimizationMode, setOptimizationMode] = useState<"GUILLOTINE" | "AREA">("GUILLOTINE");
 
   useEffect(() => {
@@ -61,6 +63,28 @@ export default function SuggestionsPage() {
     }
 
     setPacking(true);
+    setPackingProgress(5);
+    setPackingStatusText("Bắt đầu khởi tạo xếp mút...");
+
+    const progressInterval = setInterval(() => {
+      setPackingProgress((prev) => {
+        if (prev >= 92) return prev;
+        const inc = Math.random() * 10 + 4;
+        const next = Math.min(prev + inc, 92);
+
+        if (next < 30) {
+          setPackingStatusText("Đang tổng hợp dữ liệu đơn hàng & phôi...");
+        } else if (next < 60) {
+          setPackingStatusText("Đang phân tích kích thước chi tiết mút...");
+        } else if (next < 85) {
+          setPackingStatusText("Đang chạy thuật toán tính toán sơ đồ cắt tối ưu...");
+        } else {
+          setPackingStatusText("Đang tổng hợp các mẻ cắt & lưu kết quả...");
+        }
+        return next;
+      });
+    }, 180);
+
     try {
       const res = await fetch(`${API_BASE}/packing/run`, {
         method: "POST",
@@ -69,7 +93,14 @@ export default function SuggestionsPage() {
       });
       const data = await res.json();
 
+      clearInterval(progressInterval);
+
       if (res.ok) {
+        setPackingProgress(100);
+        setPackingStatusText(`Hoàn tất! Đã tạo thành công ${data.batches?.length || 0} mẻ cắt.`);
+
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
         alert(
           "Chạy thành công! Đã tạo ra " + data.batches?.length + " mẻ cắt.",
         );
@@ -86,10 +117,13 @@ export default function SuggestionsPage() {
         alert("Lỗi: " + data.error);
       }
     } catch (e) {
+      clearInterval(progressInterval);
       console.error(e);
       alert("Có lỗi xảy ra trong quá trình xếp mút.");
     } finally {
       setPacking(false);
+      setPackingProgress(0);
+      setPackingStatusText("");
     }
   };
 
@@ -301,6 +335,32 @@ export default function SuggestionsPage() {
         </Table>
       </div>
 
+      {packing && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm transition-all duration-300">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs sm:text-sm font-semibold text-blue-900 flex items-center gap-2">
+              {packingProgress < 100 ? (
+                <Loader2 className="animate-spin text-blue-600 flex-shrink-0" size={18} />
+              ) : (
+                <CheckCircle2 className="text-green-600 flex-shrink-0" size={18} />
+              )}
+              {packingStatusText}
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-blue-700 ml-2">
+              {Math.round(packingProgress)}%
+            </span>
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ease-out ${
+                packingProgress === 100 ? "bg-green-600" : "bg-blue-600"
+              }`}
+              style={{ width: `${packingProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-end">
         <Button
           size="lg"
@@ -308,8 +368,17 @@ export default function SuggestionsPage() {
           onClick={handleRunPacking}
           disabled={packing || selectedOrderIds.length === 0}
         >
-          <Scissors size={20} />
-          {packing ? "Đang xếp hình..." : "Tiến hành Xếp Hình (Run Packing)"}
+          {packing ? (
+            <>
+              <Loader2 className="animate-spin" size={20} />
+              <span>Đang xếp hình ({Math.round(packingProgress)}%)...</span>
+            </>
+          ) : (
+            <>
+              <Scissors size={20} />
+              <span>Tiến hành Xếp Hình (Run Packing)</span>
+            </>
+          )}
         </Button>
       </div>
     </div>
